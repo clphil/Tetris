@@ -647,6 +647,108 @@
     #sc-replay:active { background: #003355; }
 
     /* ══════════════════════════════════════
+       COMBO / ANNOUNCEMENTS / FLASH / SHAKE
+    ══════════════════════════════════════ */
+    #board-wrap { position: relative; }
+
+    #announce-wrap {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      pointer-events: none;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      opacity: 0;
+      width: 100%;
+    }
+    #announce-wrap.pop {
+      animation: announcePop 1.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+    }
+    @keyframes announcePop {
+      0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.3); }
+      12%  { opacity: 1; transform: translate(-50%,-50%) scale(1.25); }
+      22%  { transform: translate(-50%,-50%) scale(0.92); }
+      30%  { transform: translate(-50%,-50%) scale(1.08); }
+      40%  { transform: translate(-50%,-50%) scale(1); }
+      72%  { opacity: 1; }
+      100% { opacity: 0; transform: translate(-50%,-50%) scale(1.05); }
+    }
+    #announce-action {
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-weight: 900;
+      font-size: clamp(1.2rem, 4.5vw, 2.6rem);
+      letter-spacing: clamp(3px, 1vw, 6px);
+      text-align: center;
+      white-space: nowrap;
+      text-shadow: 0 0 18px currentColor, 0 0 36px currentColor, 0 0 60px currentColor;
+    }
+    #announce-combo {
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-weight: 900;
+      font-size: clamp(1.6rem, 7vw, 3.8rem);
+      text-align: center;
+      color: #fff;
+      text-shadow: 0 0 24px #fff, 0 0 50px rgba(255,210,0,0.9), 0 0 90px rgba(255,160,0,0.5);
+      line-height: 1;
+    }
+    #announce-points {
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-weight: 900;
+      font-size: clamp(0.7rem, 2.2vw, 1.2rem);
+      letter-spacing: 3px;
+      text-align: center;
+      color: #ffdd00;
+      text-shadow: 0 0 10px #ffdd00;
+    }
+
+    /* Flash plein écran */
+    #screen-flash {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 150;
+      opacity: 0;
+    }
+    #screen-flash.flash-white { animation: flashWhite 0.35s ease-out forwards; }
+    #screen-flash.flash-gold  { animation: flashGold  0.45s ease-out forwards; }
+    #screen-flash.flash-chaos { animation: flashChaos 0.55s ease-out forwards; }
+    #screen-flash.flash-flip  { animation: flashFlip  0.50s ease-out forwards; }
+    @keyframes flashWhite { 0%{opacity:.5;background:#fff}         100%{opacity:0;background:#fff} }
+    @keyframes flashGold  { 0%{opacity:.55;background:#ffcc00}     100%{opacity:0;background:#ffcc00} }
+    @keyframes flashChaos { 0%{opacity:.72;background:#ff3300} 45%{opacity:.38;background:#ff7700} 100%{opacity:0;background:#ff3300} }
+    @keyframes flashFlip  { 0%{opacity:.6;background:#9900ff}      100%{opacity:0;background:#5500cc} }
+
+    /* Shake du plateau */
+    @keyframes boardShake {
+      0%,100% { transform: translate(0,0) rotate(0deg); }
+      15% { transform: translate(-5px, 3px) rotate(-0.6deg); }
+      30% { transform: translate(5px, -3px) rotate(0.6deg); }
+      45% { transform: translate(-4px, 4px) rotate(-0.4deg); }
+      60% { transform: translate(4px, -2px) rotate(0.4deg); }
+      75% { transform: translate(-2px, 2px) rotate(-0.2deg); }
+      90% { transform: translate(2px, 0) rotate(0.1deg); }
+    }
+    #board-wrap.shaking { animation: boardShake 0.52s ease-out; }
+
+    /* Combo box */
+    #combo-box { display: none; }
+    #combo-box.show { display: flex; }
+    #combo-val {
+      font-size: clamp(1rem, 3.5vw, 1.8rem);
+      font-weight: 900;
+      color: #ffdd00;
+      text-shadow: 0 0 14px #ffdd00bb;
+      letter-spacing: 2px;
+      animation: comboPulse 0.6s ease-in-out infinite alternate;
+    }
+    @keyframes comboPulse {
+      from { filter: brightness(1); }
+      to   { filter: brightness(1.5) drop-shadow(0 0 8px #ffdd00); }
+    }
+
+    /* ══════════════════════════════════════
        PORTRAIT
     ══════════════════════════════════════ */
     @media (orientation: portrait) {
@@ -790,8 +892,8 @@
         <span class="tbadge tbadge-o">GRENADE</span>
       </div>
       <p class="tuto-p">
-        1 par sac de 7. Elle clignote, elle s'&eacute;nerve&hellip;
-        et apr&egrave;s <strong style="color:#ff8833">5s&nbsp;&#128165;</strong> tout saute !
+        Apparition al&eacute;atoire. Elle clignote, elle s'&eacute;nerve&hellip;
+        et apr&egrave;s <strong style="color:#ff8833">5s&nbsp;&#128165;</strong> tout saute ! Si &ccedil;a d&eacute;clenche des lignes &rarr; <strong style="color:#ff6600">CHAOS CLEAR</strong>.
       </p>
     </div>
 
@@ -807,6 +909,25 @@
       </p>
     </div>
 
+    <!-- COMBOS -->
+    <div class="tuto-section">
+      <div class="tuto-h">&#9889; Combos &amp; Scores</div>
+      <div class="tuto-grid">
+        <span class="tuto-k" style="color:#00ff88">DOUBLE</span>
+        <span class="tuto-v">2 lignes d'un coup</span>
+        <span class="tuto-k" style="color:#ffcc00">TRIPLE</span>
+        <span class="tuto-v">3 lignes — bonus + shake</span>
+        <span class="tuto-k" style="color:#ff4488">TETRIS</span>
+        <span class="tuto-v">4 lignes — gros bonus</span>
+        <span class="tuto-k" style="color:#ff6600">CHAOS</span>
+        <span class="tuto-v">Lignes via grenade</span>
+        <span class="tuto-k" style="color:#cc00ff">FLIP★</span>
+        <span class="tuto-v">Lignes apr&egrave;s un flip</span>
+        <span class="tuto-k" style="color:#fff">×2 ×3…</span>
+        <span class="tuto-v">Clears encha&icirc;n&eacute;s = combo</span>
+      </div>
+    </div>
+
     <!-- AUTRES FEATURES -->
     <div class="tuto-section">
       <div class="tuto-h">&#9998; Astuce</div>
@@ -820,7 +941,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v21022026.1819</div>
+  <div id="version-label">v21022026.2030</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -850,6 +971,11 @@
   <div id="center-panel">
     <div id="board-wrap">
       <canvas id="board"></canvas>
+      <div id="announce-wrap">
+        <div id="announce-action"></div>
+        <div id="announce-combo"></div>
+        <div id="announce-points"></div>
+      </div>
     </div>
   </div>
 
@@ -868,6 +994,10 @@
       <span>TOUR</span>
     </button>
     <button id="pause-btn">PAUSE</button>
+    <div id="combo-box" class="info-box">
+      <div class="box-label">COMBO</div>
+      <div id="combo-val">×2</div>
+    </div>
     <div class="info-box">
       <div class="box-label">NIVEAU</div>
       <div id="level-val">1</div>
@@ -875,6 +1005,9 @@
   </div>
 
 </div>
+
+<!-- Flash plein écran -->
+<div id="screen-flash"></div>
 
 <!-- signature (portrait = dans la grille CSS, paysage = fixed) -->
 <div id="signature">designed by Phil C.</div>
@@ -1064,6 +1197,7 @@ let shinyCounter = 0; // ID unique par pièce grenade
 let flipInProgress   = false;
 let flipTimer        = 0; // ms depuis le dernier flip
 let flipHighlightRows = []; // lignes à flasher pendant l'anim de suppression
+let comboCount = 0; // clears consécutifs sans pause
 
 // ══════════════════════════════════════════════
 //  Sac de pièces — exactement 1 shiny par sac
@@ -1101,7 +1235,7 @@ function initGame() {
   dropSpeed = 850; dropAcc = 0; lastTs = 0;
   paused    = false; over = false; fastDrop = false;
   particles = [];
-  flipInProgress = false; flipTimer = 0;
+  flipInProgress = false; flipTimer = 0; comboCount = 0;
   bag = []; fillBag();
   nextPiece = drawFromBag();
   spawn();
@@ -1175,9 +1309,9 @@ function applyGravity() {
 
 // ══════════════════════════════════════════════
 //  Effacement de lignes complètes
+//  mode : 'normal' | 'shiny' | 'flip'
 // ══════════════════════════════════════════════
-function clearLines() {
-  // Repérer toutes les lignes complètes
+function clearLines(mode = 'normal') {
   const fullRows = [];
   for (let r = 0; r < ROWS; r++) {
     if (board[r].every(v => v !== null)) fullRows.push(r);
@@ -1185,7 +1319,7 @@ function clearLines() {
   const cleared = fullRows.length;
   if (!cleared) return 0;
 
-  // Spawn des pixels AVANT suppression (indices encore valides)
+  // Particules AVANT suppression
   for (const r of fullRows) {
     for (let c = 0; c < COLS; c++) {
       const cell = board[r][c];
@@ -1193,14 +1327,50 @@ function clearLines() {
     }
   }
 
-  // Supprimer les lignes complètes d'un coup
   board = board.filter((_, idx) => !fullRows.includes(idx));
   while (board.length < ROWS) board.unshift(Array(COLS).fill(null));
 
-  score += cleared * cleared * 100;
   lines += cleared;
   level = Math.floor(lines / 10) + 1;
   dropSpeed = Math.max(80, 850 - (level - 1) * 70);
+
+  // ── Scoring spectaculaire ──
+  const BASE = [0, 100, 300, 600, 1000];
+  let pts = (BASE[Math.min(cleared, 4)]) * level;
+
+  comboCount++;
+  if (comboCount > 1) pts = Math.round(pts * (1 + (comboCount - 1) * 0.5));
+
+  let specialBonus = 0;
+  let actionName   = '';
+  let flashType    = 'white';
+  let color        = '#00c8ff';
+
+  if (mode === 'shiny') {
+    actionName   = 'CHAOS CLEAR';
+    specialBonus = 600 + cleared * 350;
+    flashType    = 'chaos';
+    color        = '#ff6600';
+    doShake();
+  } else if (mode === 'flip') {
+    actionName   = 'FLIP MASTER';
+    specialBonus = 400 + cleared * 250;
+    flashType    = 'flip';
+    color        = '#cc00ff';
+    doShake();
+  } else {
+    if      (cleared === 2) { actionName = 'DOUBLE'; color = '#00ff88'; flashType = 'white'; }
+    else if (cleared === 3) { actionName = 'TRIPLE'; color = '#ffcc00'; flashType = 'gold'; doShake(); }
+    else if (cleared === 4) { actionName = 'TETRIS'; color = '#ff4488'; flashType = 'gold'; specialBonus = 800 * level; doShake(); }
+  }
+
+  score += pts + specialBonus;
+
+  if (actionName || comboCount >= 2) {
+    doScreenFlash(flashType);
+    showAnnouncement(actionName, comboCount, pts + specialBonus, color);
+  }
+
   updateUI();
   return cleared;
 }
@@ -1226,7 +1396,8 @@ function lock() {
     })
   );
 
-  clearLines();
+  const cleared = clearLines('normal');
+  if (!cleared) { comboCount = 0; resetComboDisplay(); }
   spawn();
 }
 
@@ -1278,7 +1449,7 @@ function checkShinyExplosions() {
 
   if (anyExploded) {
     applyGravity();
-    clearLines(); // des lignes peuvent se former après la chute
+    clearLines('shiny'); // des lignes peuvent se former après la chute
     updateUI();
   }
 }
@@ -1377,7 +1548,7 @@ function animateFlipLineClear(rows) {
       setTimeout(flash, FLASH_MS);
     } else {
       flipHighlightRows = [];
-      clearLines();
+      clearLines('flip');
       updateUI();
       drawBoard();
       finalizeFlip();
@@ -1496,6 +1667,52 @@ function hideScoresScreen() {
 
 document.getElementById('sc-replay').addEventListener('click', () => { hideScoresScreen(); initGame(); });
 document.getElementById('sc-replay').addEventListener('touchstart', e => { e.preventDefault(); hideScoresScreen(); initGame(); }, { passive: false });
+
+// ══════════════════════════════════════════════
+//  Effets visuels spectaculaires
+// ══════════════════════════════════════════════
+function doScreenFlash(type) {
+  const el = document.getElementById('screen-flash');
+  el.className = '';
+  void el.offsetWidth; // reflow pour relancer l'animation
+  el.className = `flash-${type}`;
+}
+
+function doShake() {
+  const wrap = document.getElementById('board-wrap');
+  wrap.classList.remove('shaking');
+  void wrap.offsetWidth;
+  wrap.classList.add('shaking');
+  wrap.addEventListener('animationend', () => wrap.classList.remove('shaking'), { once: true });
+}
+
+function showAnnouncement(action, combo, points, color) {
+  const wrap    = document.getElementById('announce-wrap');
+  const actEl   = document.getElementById('announce-action');
+  const comboEl = document.getElementById('announce-combo');
+  const ptsEl   = document.getElementById('announce-points');
+
+  actEl.textContent  = action;
+  actEl.style.color  = color || '#00c8ff';
+  comboEl.textContent = combo > 1 ? `×${combo}` : '';
+  ptsEl.textContent  = points > 0 ? `+${points.toLocaleString('fr-FR')}` : '';
+
+  wrap.className = '';
+  void wrap.offsetWidth;
+  wrap.className = 'pop';
+
+  // Affiche le compteur combo dans le panneau latéral
+  const comboBox = document.getElementById('combo-box');
+  const comboVal = document.getElementById('combo-val');
+  if (combo > 1) {
+    comboBox.classList.add('show');
+    comboVal.textContent = `×${combo}`;
+  }
+}
+
+function resetComboDisplay() {
+  document.getElementById('combo-box').classList.remove('show');
+}
 
 // ══════════════════════════════════════════════
 //  UI
