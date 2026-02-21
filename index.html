@@ -141,6 +141,7 @@
       box-shadow: 0 0 20px #00c8ff55, 0 0 40px #00c8ff22, inset 0 0 8px #00001a;
       line-height: 0;
       flex-shrink: 0;
+      transform-origin: center center;
     }
     #board { display: block; }
 
@@ -316,6 +317,30 @@
     #pause-btn:active { background: #003355; }
 
     /* ══════════════════════════════════════
+       BOUTON FLIP (power-up tous les 10 lignes)
+    ══════════════════════════════════════ */
+    #flip-btn {
+      background: #1a0800;
+      border: 2px solid #ffcc00;
+      color: #ffcc00;
+      padding: clamp(4px, 1.2vw, 8px) clamp(8px, 2.5vw, 20px);
+      font-size: clamp(0.5rem, 1.6vw, 0.75rem);
+      letter-spacing: 3px;
+      font-weight: 900;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 88%;
+      animation: flipPulse 0.85s ease-in-out infinite;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #flip-btn.hidden { display: none; }
+    #flip-btn:active { background: #4a2800; }
+    @keyframes flipPulse {
+      0%, 100% { box-shadow: 0 0 8px #ffcc0055; }
+      50%       { box-shadow: 0 0 22px #ffcc00cc, 0 0 44px #ffcc0044; }
+    }
+
+    /* ══════════════════════════════════════
        OVERLAY (pause / game over)
     ══════════════════════════════════════ */
     #overlay {
@@ -470,6 +495,11 @@
         padding: 4px 6px;
         font-size: clamp(0.48rem, 2.8vw, 0.72rem);
       }
+      #flip-btn {
+        width: 90%;
+        padding: 4px 6px;
+        font-size: clamp(0.48rem, 2.8vw, 0.72rem);
+      }
     }
   </style>
 </head>
@@ -529,6 +559,7 @@
       <span>TOUR</span>
     </button>
     <button id="pause-btn">PAUSE</button>
+    <button id="flip-btn" class="hidden">&#8645; FLIP</button>
     <div class="info-box">
       <div class="box-label">NIVEAU</div>
       <div id="level-val">1</div>
@@ -668,6 +699,9 @@ let dropSpeed, dropAcc, lastTs, rafId;
 let fastDrop = false;
 let bag = [];
 let shinyCounter = 0; // ID unique par pièce grenade
+let flipAvailable    = false;
+let flipInProgress   = false;
+let lastFlipMilestone = 0;
 
 // ══════════════════════════════════════════════
 //  Sac de pièces — exactement 1 shiny par sac
@@ -704,6 +738,8 @@ function initGame() {
   dropSpeed = 850; dropAcc = 0; lastTs = 0;
   paused    = false; over = false; fastDrop = false;
   particles = [];
+  flipAvailable = false; flipInProgress = false; lastFlipMilestone = 0;
+  document.getElementById('flip-btn').classList.add('hidden');
   bag = []; fillBag();
   nextPiece = drawFromBag();
   spawn();
@@ -792,6 +828,13 @@ function clearLines() {
     lines += cleared;
     level = Math.floor(lines / 10) + 1;
     dropSpeed = Math.max(120, 850 - (level - 1) * 50);
+    // Débloque le bouton FLIP à chaque nouveau palier de 10 lignes
+    const milestone = Math.floor(lines / 10) * 10;
+    if (milestone > 0 && milestone > lastFlipMilestone) {
+      lastFlipMilestone = milestone;
+      flipAvailable = true;
+      document.getElementById('flip-btn').classList.remove('hidden');
+    }
     updateUI();
   }
   return cleared;
@@ -862,6 +905,53 @@ function checkShinyExplosions() {
     clearLines(); // des lignes peuvent se former après la chute
     updateUI();
   }
+}
+
+// ══════════════════════════════════════════════
+//  FLIP — Retournement 180° du plateau
+// ══════════════════════════════════════════════
+function doFlipBoard() {
+  // Rotation 180° : chaque cellule [r][c] → [ROWS-1-r][COLS-1-c]
+  const nb = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      if (board[r][c]) nb[ROWS - 1 - r][COLS - 1 - c] = board[r][c];
+  board = nb;
+}
+
+function startFlip() {
+  if (flipInProgress || !flipAvailable || over) return;
+  flipAvailable  = false;
+  flipInProgress = true;
+  current = null; // la pièce en cours disparaît ; une neuve naîtra après
+  document.getElementById('flip-btn').classList.add('hidden');
+
+  const wrap = document.getElementById('board-wrap');
+  const HALF = 380; // ms par demi-animation
+
+  // Phase 1 : repli vertical (scaleY 1 → 0)
+  wrap.style.transition = `transform ${HALF}ms cubic-bezier(0.55,0,1,0.45)`;
+  wrap.style.transform  = 'scaleY(0.02)';
+
+  setTimeout(() => {
+    // Mi-chemin : retourner les données, appliquer physique, effacer lignes
+    doFlipBoard();
+    applyGravity();
+    clearLines();
+    updateUI();
+
+    // Phase 2 : dépli vertical (scaleY 0 → 1)
+    wrap.style.transition = `transform ${HALF}ms cubic-bezier(0,0.55,0.45,1)`;
+    wrap.style.transform  = 'scaleY(1)';
+
+    setTimeout(() => {
+      wrap.style.transition = '';
+      wrap.style.transform  = '';
+      flipInProgress = false;
+      spawn(); // nouvelle pièce qui tombe depuis le haut
+      if (over) showOverlay(false);
+    }, HALF);
+  }, HALF);
 }
 
 // ══════════════════════════════════════════════
@@ -1011,7 +1101,7 @@ function loop(ts) {
   lastTs = ts;
 
   if (!over) {
-    if (!paused && current) {
+    if (!paused && !flipInProgress && current) {
       const spd = fastDrop ? Math.min(40, dropSpeed * 0.05) : dropSpeed;
       dropAcc += dt;
       if (dropAcc >= spd) {
@@ -1021,8 +1111,8 @@ function loop(ts) {
       }
     }
 
-    // Vérifie les grenades (même en pause, les particules continuent)
-    if (!paused) checkShinyExplosions();
+    // Grenades — suspendues pendant le flip
+    if (!paused && !flipInProgress) checkShinyExplosions();
 
     updateParticles(dt);
     drawBoard();
@@ -1053,6 +1143,7 @@ btn('btn-left',  () => { if (!paused && !over && current && valid(current, -1, 0
 btn('btn-right', () => { if (!paused && !over && current && valid(current,  1, 0)) current.x++; });
 btn('btn-down',  () => { fastDrop = true; }, () => { fastDrop = false; });
 btn('tour-btn',  () => rotate());
+btn('flip-btn',  () => startFlip());
 
 document.getElementById('pause-btn').addEventListener('click', togglePause);
 document.getElementById('pause-btn').addEventListener('touchstart', e => { e.preventDefault(); togglePause(); }, { passive: false });
