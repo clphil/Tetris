@@ -683,7 +683,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v21022026.1251</div>
+  <div id="version-label">v21022026.1635</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -838,6 +838,37 @@ function spawnExplosion(boardX, boardY, color) {
   }
 }
 
+// Explosion ligne — éclat de pixels depuis chaque cellule, intensité ∝ nb lignes
+function spawnLineExplosion(boardX, boardY, color, numLines) {
+  const px = (boardX + 0.5) * BS;
+  const py = (boardY + 0.5) * BS;
+  const speedScale = 1 + (numLines - 1) * 0.22;
+  const sizeScale  = 1 + (numLines - 1) * 0.12;
+  const decayScale = Math.max(0.5, 1 - (numLines - 1) * 0.05);
+  const count = 7 + Math.floor(Math.random() * 6);
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (1.6 + Math.random() * 3.5) * (BS / 20) * speedScale;
+    const warm  = Math.random();
+    const g2 = Math.round(warm > 0.5 ? 200 + Math.random() * 55 : 60 + Math.random() * 80);
+    const b2  = Math.round(warm > 0.7 ? 100 : 10);
+    // 60 % couleur de la pièce, 20 % blanc étincelant, 20 % orange chaud
+    const col = Math.random() < 0.6 ? color
+              : Math.random() < 0.5 ? '#ffffff'
+              : `rgb(255,${g2},${b2})`;
+    particles.push({
+      x: px + (Math.random() - 0.5) * BS * 0.8,
+      y: py + (Math.random() - 0.5) * BS * 0.8,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1.2 * speedScale,
+      color: col,
+      size: Math.max(1.5, BS * (0.10 + Math.random() * 0.18) * sizeScale),
+      life: 1.0,
+      decay: (0.014 + Math.random() * 0.018) * decayScale
+    });
+  }
+}
+
 function updateParticles(dt) {
   const g = 0.25 * dt / 16; // gravité normalisée
   for (let i = particles.length - 1; i >= 0; i--) {
@@ -988,28 +1019,38 @@ function applyGravity() {
 //  Effacement de lignes complètes
 // ══════════════════════════════════════════════
 function clearLines() {
-  let cleared = 0;
-  for (let r = ROWS - 1; r >= 0; r--) {
-    if (board[r].every(v => v !== null)) {
-      board.splice(r, 1);
-      board.unshift(Array(COLS).fill(null));
-      cleared++; r++;
+  // Repérer toutes les lignes complètes
+  const fullRows = [];
+  for (let r = 0; r < ROWS; r++) {
+    if (board[r].every(v => v !== null)) fullRows.push(r);
+  }
+  const cleared = fullRows.length;
+  if (!cleared) return 0;
+
+  // Spawn des pixels AVANT suppression (indices encore valides)
+  for (const r of fullRows) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = board[r][c];
+      if (cell) spawnLineExplosion(c, r, cell.color, cleared);
     }
   }
-  if (cleared) {
-    score += cleared * cleared * 100;
-    lines += cleared;
-    level = Math.floor(lines / 10) + 1;
-    dropSpeed = Math.max(120, 850 - (level - 1) * 50);
-    // Débloque le bouton FLIP à chaque nouveau palier de 10 lignes
-    const milestone = Math.floor(lines / 10) * 10;
-    if (milestone > 0 && milestone > lastFlipMilestone) {
-      lastFlipMilestone = milestone;
-      flipAvailable = true;
-      document.getElementById('flip-btn').classList.remove('hidden');
-    }
-    updateUI();
+
+  // Supprimer les lignes complètes d'un coup
+  board = board.filter((_, idx) => !fullRows.includes(idx));
+  while (board.length < ROWS) board.unshift(Array(COLS).fill(null));
+
+  score += cleared * cleared * 100;
+  lines += cleared;
+  level = Math.floor(lines / 10) + 1;
+  dropSpeed = Math.max(120, 850 - (level - 1) * 50);
+  // Débloque le bouton FLIP à chaque nouveau palier de 10 lignes
+  const milestone = Math.floor(lines / 10) * 10;
+  if (milestone > 0 && milestone > lastFlipMilestone) {
+    lastFlipMilestone = milestone;
+    flipAvailable = true;
+    document.getElementById('flip-btn').classList.remove('hidden');
   }
+  updateUI();
   return cleared;
 }
 
