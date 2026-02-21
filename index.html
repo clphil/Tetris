@@ -627,6 +627,7 @@ function drawFromBag() {
   const type = bag.pop();
   return {
     type, color: COLORS[type],
+    shiny: Math.random() < 0.20,
     shape: SHAPES[type].map(r => [...r]),
     x: Math.floor(COLS / 2) - Math.floor(SHAPES[type][0].length / 2),
     y: 0
@@ -696,20 +697,27 @@ function lock() {
     row.forEach((cell, c) => {
       if (cell) {
         const ny = current.y + r, nx = current.x + c;
-        if (ny >= 0) board[ny][nx] = current.color;
+        if (ny >= 0) board[ny][nx] = { color: current.color, shiny: !!current.shiny };
       }
     })
   );
   let cleared = 0;
+  const shinyColors = new Set();
   for (let r = ROWS - 1; r >= 0; r--) {
     if (board[r].every(v => v !== null)) {
+      board[r].forEach(cell => { if (cell && cell.shiny) shinyColors.add(cell.color); });
       board.splice(r, 1);
       board.unshift(Array(COLS).fill(null));
       cleared++; r++;
     }
   }
+  if (shinyColors.size > 0) {
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++)
+        if (board[r][c] && shinyColors.has(board[r][c].color)) board[r][c] = null;
+  }
   if (cleared) {
-    score += cleared * cleared;
+    score += cleared * cleared + (shinyColors.size > 0 ? cleared * 3 : 0);
     lines += cleared;
     level = Math.floor(lines / 10) + 1;
     dropSpeed = Math.max(120, 850 - (level - 1) * 50);
@@ -755,7 +763,7 @@ function hideOverlay() {
 // ══════════════════════════════════════════════
 //  Dessin
 // ══════════════════════════════════════════════
-function drawBlock(c2d, x, y, color, bs) {
+function drawBlock(c2d, x, y, color, bs, shiny) {
   c2d.fillStyle = color;
   c2d.fillRect(x * bs + 1, y * bs + 1, bs - 2, bs - 2);
   const hl = Math.max(2, Math.floor(bs * 0.18));
@@ -765,6 +773,16 @@ function drawBlock(c2d, x, y, color, bs) {
   c2d.fillStyle = 'rgba(0,0,0,0.4)';
   c2d.fillRect(x * bs + bs - hl - 1, y * bs + 1, hl, bs - 2);
   c2d.fillRect(x * bs + 1, y * bs + bs - hl - 1, bs - 2, hl);
+  if (shiny) {
+    const pulse = 0.55 + 0.45 * Math.sin(performance.now() / 250 * Math.PI * 2);
+    c2d.save();
+    c2d.shadowColor = 'rgba(255,240,80,0.95)';
+    c2d.shadowBlur  = bs * 0.55;
+    c2d.strokeStyle = `rgba(255,245,120,${pulse})`;
+    c2d.lineWidth   = Math.max(1.5, bs * 0.09);
+    c2d.strokeRect(x * bs + 1.5, y * bs + 1.5, bs - 3, bs - 3);
+    c2d.restore();
+  }
 }
 
 function drawBoard() {
@@ -776,7 +794,7 @@ function drawBoard() {
       ctx.strokeRect(c * BS, r * BS, BS, BS);
 
   board.forEach((row, r) =>
-    row.forEach((color, c) => { if (color) drawBlock(ctx, c, r, color, BS); })
+    row.forEach((cell, c) => { if (cell) drawBlock(ctx, c, r, cell.color, BS, cell.shiny); })
   );
 
   if (current && !over) {
@@ -792,7 +810,7 @@ function drawBoard() {
     }
     current.shape.forEach((row, r) =>
       row.forEach((cell, c) => {
-        if (cell) drawBlock(ctx, current.x + c, current.y + r, current.color, BS);
+        if (cell) drawBlock(ctx, current.x + c, current.y + r, current.color, BS, current.shiny);
       })
     );
   }
@@ -817,14 +835,7 @@ function drawNext() {
   const oy = Math.floor((4 - s.length) / 2);
   s.forEach((row, r) =>
     row.forEach((cell, c) => {
-      if (cell) {
-        nextCtx.fillStyle = nextPiece.color;
-        nextCtx.fillRect((c + ox) * NB + 1, (r + oy) * NB + 1, NB - 2, NB - 2);
-        nextCtx.fillStyle = 'rgba(255,255,255,0.35)';
-        const hl = Math.max(2, Math.floor(NB * 0.18));
-        nextCtx.fillRect((c + ox) * NB + 1, (r + oy) * NB + 1, NB - 2, hl);
-        nextCtx.fillRect((c + ox) * NB + 1, (r + oy) * NB + 1, hl, NB - 2);
-      }
+      if (cell) drawBlock(nextCtx, c + ox, r + oy, nextPiece.color, NB, nextPiece.shiny);
     })
   );
 }
