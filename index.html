@@ -271,6 +271,88 @@
       box-shadow: 0 0 12px #00c8ff55;
     }
     #ov-btn:active { background: #003355; }
+
+    /* ─── SIGNATURE ─── */
+    #signature {
+      position: fixed;
+      bottom: 3px;
+      left: 0; right: 0;
+      text-align: center;
+      font-size: 0.48rem;
+      color: rgba(80, 80, 150, 0.65);
+      letter-spacing: 2px;
+      pointer-events: none;
+      z-index: 5;
+      font-style: italic;
+      font-family: Arial, sans-serif;
+      font-weight: 400;
+    }
+
+    /* ─── PORTRAIT ─── */
+    @media (orientation: portrait) {
+      #app {
+        display: grid;
+        grid-template-areas: "center center" "left right";
+        grid-template-rows: 58vh 42vh;
+        grid-template-columns: 1fr 1fr;
+        align-items: stretch;
+      }
+
+      #center-panel {
+        grid-area: center;
+        width: 100%;
+        padding: 4px 0 2px;
+      }
+
+      #left-panel {
+        grid-area: left;
+        width: 100%;
+        height: 100%;
+        padding: 6px 4px 18px;
+        justify-content: space-evenly;
+        border-top: 1px solid #00c8ff33;
+        border-right: 1px solid #00c8ff22;
+      }
+
+      #right-panel {
+        grid-area: right;
+        width: 100%;
+        height: 100%;
+        padding: 6px 4px 18px;
+        justify-content: space-evenly;
+        border-top: 1px solid #00c8ff33;
+      }
+
+      #title { display: none; }
+
+      .ctrl-btn {
+        width: clamp(40px, 11vw, 60px);
+        height: clamp(40px, 11vw, 60px);
+        font-size: clamp(1rem, 3.5vw, 1.5rem);
+      }
+
+      .dpad-spacer {
+        width: clamp(40px, 11vw, 60px);
+        height: clamp(40px, 11vw, 60px);
+      }
+
+      #speed-section { width: 95%; }
+
+      .info-box { width: 95%; padding: 3px 6px; }
+
+      #score-val { font-size: clamp(1.1rem, 5vw, 1.8rem); }
+      #level-val { font-size: clamp(1rem, 4.5vw, 1.5rem); }
+
+      #tour-btn {
+        width: clamp(44px, 13vw, 64px);
+        height: clamp(44px, 13vw, 64px);
+      }
+
+      #pause-btn {
+        width: 95%;
+        font-size: clamp(0.55rem, 3vw, 0.8rem);
+      }
+    }
   </style>
 </head>
 <body>
@@ -335,6 +417,8 @@
   </div>
 </div>
 
+<div id="signature">designed by Phil C.</div>
+
 <!-- ─── OVERLAY (game over / pause) ─── -->
 <div id="overlay">
   <div id="ov-title">GAME OVER</div>
@@ -377,6 +461,12 @@ const nextCtx   = nextCv.getContext('2d');
 let BS = 18; // block size, recalculated on resize/init
 
 function calcBS() {
+  const isPortrait = window.innerHeight > window.innerWidth;
+  if (isPortrait) {
+    const maxH = window.innerHeight * 0.54;
+    const maxW  = window.innerWidth  * 0.88;
+    return Math.max(10, Math.min(28, Math.floor(maxH / ROWS), Math.floor(maxW / COLS)));
+  }
   const maxH = window.innerHeight * 0.97;
   const maxW  = window.innerWidth  * 0.42;
   return Math.max(10, Math.min(28, Math.floor(maxH / ROWS), Math.floor(maxW / COLS)));
@@ -386,7 +476,10 @@ function setupCanvas() {
   BS = calcBS();
   canvas.width  = COLS * BS;
   canvas.height = ROWS * BS;
-  const NB = Math.max(16, Math.floor(BS * 0.85));
+  const isPortrait = window.innerHeight > window.innerWidth;
+  const NB = isPortrait
+    ? Math.max(12, Math.floor(BS * 0.62))
+    : Math.max(16, Math.floor(BS * 0.85));
   nextCv.width  = 4 * NB;
   nextCv.height = 4 * NB;
   nextCv._nb = NB;
