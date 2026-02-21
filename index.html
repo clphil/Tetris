@@ -799,7 +799,7 @@
     <div class="tuto-section">
       <div class="tuto-h">
         &#8645; Flip
-        <span class="tbadge tbadge-p">TOUS LES 10 LIGNES</span>
+        <span class="tbadge tbadge-p">TOUTES LES MINUTES</span>
       </div>
       <p class="tuto-p">
         Le plateau se retourne, tout tombe, les lignes pleines disparaissent.
@@ -820,7 +820,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v21022026.1806</div>
+  <div id="version-label">v21022026.1819</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -868,19 +868,6 @@
       <span>TOUR</span>
     </button>
     <button id="pause-btn">PAUSE</button>
-    <div id="flip-gauge-wrap">
-      <svg id="flip-gauge" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="22" cy="22" r="17" fill="none" stroke="#1a1a44" stroke-width="4"/>
-        <circle id="flip-arc" cx="22" cy="22" r="17" fill="none"
-                stroke="#00c8ff" stroke-width="4"
-                stroke-dasharray="106.81" stroke-dashoffset="106.81"
-                stroke-linecap="round"
-                transform="rotate(-90 22 22)"/>
-        <text id="flip-icon" x="22" y="27.5" text-anchor="middle"
-              font-size="14" font-family="Arial" fill="#00c8ff">&#8645;</text>
-      </svg>
-      <div id="flip-gauge-label">FLIP</div>
-    </div>
     <div class="info-box">
       <div class="box-label">NIVEAU</div>
       <div id="level-val">1</div>
@@ -1075,7 +1062,7 @@ let fastDrop = false;
 let bag = [];
 let shinyCounter = 0; // ID unique par pièce grenade
 let flipInProgress   = false;
-let lastFlipMilestone = 0;
+let flipTimer        = 0; // ms depuis le dernier flip
 let flipHighlightRows = []; // lignes à flasher pendant l'anim de suppression
 
 // ══════════════════════════════════════════════
@@ -1087,8 +1074,9 @@ function fillBag() {
     const j = Math.floor(Math.random() * (i + 1));
     [types[i], types[j]] = [types[j], types[i]];
   }
-  // Exactement 1 pièce grenade par sac de 7
-  const shinyPos = Math.floor(Math.random() * types.length);
+  // ~25 % de chance d'avoir 1 shiny par sac (aléatoire)
+  const hasShiny = Math.random() < 0.25;
+  const shinyPos = hasShiny ? Math.floor(Math.random() * types.length) : -1;
   bag = types.map((type, i) => ({ type, shiny: i === shinyPos }));
 }
 
@@ -1113,7 +1101,7 @@ function initGame() {
   dropSpeed = 850; dropAcc = 0; lastTs = 0;
   paused    = false; over = false; fastDrop = false;
   particles = [];
-  flipInProgress = false; lastFlipMilestone = 0;
+  flipInProgress = false; flipTimer = 0;
   bag = []; fillBag();
   nextPiece = drawFromBag();
   spawn();
@@ -1212,7 +1200,7 @@ function clearLines() {
   score += cleared * cleared * 100;
   lines += cleared;
   level = Math.floor(lines / 10) + 1;
-  dropSpeed = Math.max(120, 850 - (level - 1) * 50);
+  dropSpeed = Math.max(80, 850 - (level - 1) * 70);
   updateUI();
   return cleared;
 }
@@ -1238,15 +1226,8 @@ function lock() {
     })
   );
 
-  const prevMilestone = lastFlipMilestone;
   clearLines();
-  const newMilestone = Math.floor(lines / 10) * 10;
-  if (newMilestone > 0 && newMilestone > prevMilestone && !flipInProgress) {
-    lastFlipMilestone = newMilestone;
-    startFlip();
-  } else {
-    spawn();
-  }
+  spawn();
 }
 
 function hardDrop() {
@@ -1540,7 +1521,6 @@ function updateUI() {
   document.getElementById('score-val').textContent = score;
   document.getElementById('lines-val').textContent = `LIGNES : ${lines}`;
   document.getElementById('level-val').textContent = level;
-  updateFlipGauge();
 }
 
 function showOverlay(isPause) {
@@ -1683,12 +1663,19 @@ function loop(ts) {
 
   if (!over) {
     if (!paused && !flipInProgress && current) {
-      const spd = fastDrop ? Math.min(40, dropSpeed * 0.05) : dropSpeed;
-      dropAcc += dt;
-      if (dropAcc >= spd) {
-        dropAcc = 0;
-        if (valid(current, 0, 1)) current.y++;
-        else lock();
+      // Flip automatique toutes les 60 secondes
+      flipTimer += dt;
+      if (flipTimer >= 60000) {
+        flipTimer = 0;
+        startFlip();
+      } else {
+        const spd = fastDrop ? Math.min(40, dropSpeed * 0.05) : dropSpeed;
+        dropAcc += dt;
+        if (dropAcc >= spd) {
+          dropAcc = 0;
+          if (valid(current, 0, 1)) current.y++;
+          else lock();
+        }
       }
     }
 
