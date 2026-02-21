@@ -615,19 +615,23 @@ let fastDrop = false;
 let bag = [];
 
 function fillBag() {
-  bag = Object.keys(SHAPES);
-  for (let i = bag.length - 1; i > 0; i--) {
+  const types = Object.keys(SHAPES);
+  for (let i = types.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [bag[i], bag[j]] = [bag[j], bag[i]];
+    [types[i], types[j]] = [types[j], types[i]];
   }
+  // Exactement 2 pièces shiny par sac de 7
+  const shinyIdx = new Set();
+  while (shinyIdx.size < 2) shinyIdx.add(Math.floor(Math.random() * types.length));
+  bag = types.map((type, i) => ({ type, shiny: shinyIdx.has(i) }));
 }
 
 function drawFromBag() {
   if (!bag.length) fillBag();
-  const type = bag.pop();
+  const { type, shiny } = bag.pop();
   return {
     type, color: COLORS[type],
-    shiny: Math.random() < 0.20,
+    shiny,
     shape: SHAPES[type].map(r => [...r]),
     x: Math.floor(COLS / 2) - Math.floor(SHAPES[type][0].length / 2),
     y: 0
