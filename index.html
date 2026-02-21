@@ -21,6 +21,7 @@
       width: 100vw;
       height: 100vh;
       align-items: stretch;
+      overflow: hidden;
     }
 
     /* ─── LEFT PANEL ─── */
@@ -30,8 +31,9 @@
       align-items: center;
       justify-content: space-between;
       width: 28%;
-      padding: 6px 4px;
+      padding: 6px 4px 18px;
       flex-shrink: 0;
+      overflow: hidden;
     }
 
     #title {
@@ -148,8 +150,9 @@
       align-items: center;
       justify-content: space-between;
       width: 28%;
-      padding: 6px 4px;
+      padding: 6px 4px 18px;
       flex-shrink: 0;
+      overflow: hidden;
     }
 
     .info-box {
@@ -272,7 +275,7 @@
     }
     #ov-btn:active { background: #003355; }
 
-    /* ─── SIGNATURE ─── */
+    /* ─── SIGNATURE — paysage uniquement (portrait = dans la grille) ─── */
     #signature {
       position: fixed;
       bottom: 3px;
@@ -292,66 +295,106 @@
     @media (orientation: portrait) {
       #app {
         display: grid;
-        grid-template-areas: "center center" "left right";
-        grid-template-rows: 58vh 42vh;
+        grid-template-areas:
+          "center center"
+          "left   right"
+          "sig    sig";
         grid-template-columns: 1fr 1fr;
+        grid-template-rows: 57vh calc(43vh - 14px) 14px;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
         align-items: stretch;
       }
 
+      /* Board — zone du haut */
       #center-panel {
         grid-area: center;
         width: 100%;
-        padding: 4px 0 2px;
+        height: 100%;
+        padding: 6px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
       }
 
+      /* Contrôles gauche — zone bas-gauche */
       #left-panel {
         grid-area: left;
         width: 100%;
         height: 100%;
-        padding: 6px 4px 18px;
+        padding: 6px 5px 4px;
         justify-content: space-evenly;
-        border-top: 1px solid #00c8ff33;
+        overflow: hidden;
+        border-top: 1px solid #00c8ff44;
         border-right: 1px solid #00c8ff22;
+        flex-shrink: unset;
       }
 
+      /* Contrôles droite — zone bas-droite */
       #right-panel {
         grid-area: right;
         width: 100%;
         height: 100%;
-        padding: 6px 4px 18px;
+        padding: 6px 5px 4px;
         justify-content: space-evenly;
-        border-top: 1px solid #00c8ff33;
+        overflow: hidden;
+        border-top: 1px solid #00c8ff44;
+        flex-shrink: unset;
+      }
+
+      /* Signature dans la grille (pas de chevauchement) */
+      #signature {
+        grid-area: sig;
+        position: static;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.48rem;
+        color: rgba(80, 80, 150, 0.65);
+        letter-spacing: 2px;
+        font-style: italic;
+        font-family: Arial, sans-serif;
       }
 
       #title { display: none; }
 
+      /* Boutons D-pad plus grands (vw = petite dimension en portrait) */
       .ctrl-btn {
-        width: clamp(40px, 11vw, 60px);
-        height: clamp(40px, 11vw, 60px);
-        font-size: clamp(1rem, 3.5vw, 1.5rem);
+        width: clamp(38px, 11vw, 58px);
+        height: clamp(38px, 11vw, 58px);
+        font-size: clamp(1rem, 3.5vw, 1.4rem);
       }
-
       .dpad-spacer {
-        width: clamp(40px, 11vw, 60px);
-        height: clamp(40px, 11vw, 60px);
+        width: clamp(38px, 11vw, 58px);
+        height: clamp(38px, 11vw, 58px);
       }
 
-      #speed-section { width: 95%; }
+      #speed-section { width: 92%; }
+      #speed-label { font-size: clamp(0.45rem, 2.2vw, 0.65rem); }
 
-      .info-box { width: 95%; padding: 3px 6px; }
+      .info-box { width: 92%; padding: 3px 5px; }
+      .box-label { font-size: clamp(0.45rem, 2.2vw, 0.65rem); letter-spacing: 2px; }
 
-      #score-val { font-size: clamp(1.1rem, 5vw, 1.8rem); }
-      #level-val { font-size: clamp(1rem, 4.5vw, 1.5rem); }
+      #score-val { font-size: clamp(1rem, 5vw, 1.6rem); }
+      #lines-val { font-size: clamp(0.4rem, 2vw, 0.55rem); }
+      #level-val { font-size: clamp(0.9rem, 4.5vw, 1.4rem); }
 
       #tour-btn {
-        width: clamp(44px, 13vw, 64px);
-        height: clamp(44px, 13vw, 64px);
+        width: clamp(42px, 12vw, 58px);
+        height: clamp(42px, 12vw, 58px);
+        font-size: clamp(0.4rem, 1.8vw, 0.55rem);
       }
+      #tour-icon { font-size: clamp(0.9rem, 3.5vw, 1.2rem); }
 
       #pause-btn {
-        width: 95%;
-        font-size: clamp(0.55rem, 3vw, 0.8rem);
+        width: 92%;
+        padding: 5px 8px;
+        font-size: clamp(0.5rem, 2.8vw, 0.75rem);
       }
+
+      #chute-label { font-size: clamp(0.4rem, 2vw, 0.55rem); }
     }
   </style>
 </head>
@@ -463,13 +506,16 @@ let BS = 18; // block size, recalculated on resize/init
 function calcBS() {
   const isPortrait = window.innerHeight > window.innerWidth;
   if (isPortrait) {
-    const maxH = window.innerHeight * 0.54;
-    const maxW  = window.innerWidth  * 0.88;
-    return Math.max(10, Math.min(28, Math.floor(maxH / ROWS), Math.floor(maxW / COLS)));
+    // Zone canvas = 57vh, padding 12px → espace utile ~= 57vh - 12px
+    const maxH = window.innerHeight * 0.57 - 12;
+    // Largeur pleine écran avec petites marges
+    const maxW = window.innerWidth * 0.90;
+    return Math.max(10, Math.min(30, Math.floor(maxH / ROWS), Math.floor(maxW / COLS)));
   }
+  // Paysage : 97% hauteur, 44% largeur (panneau central)
   const maxH = window.innerHeight * 0.97;
-  const maxW  = window.innerWidth  * 0.42;
-  return Math.max(10, Math.min(28, Math.floor(maxH / ROWS), Math.floor(maxW / COLS)));
+  const maxW  = window.innerWidth  * 0.44;
+  return Math.max(10, Math.min(30, Math.floor(maxH / ROWS), Math.floor(maxW / COLS)));
 }
 
 function setupCanvas() {
@@ -477,9 +523,10 @@ function setupCanvas() {
   canvas.width  = COLS * BS;
   canvas.height = ROWS * BS;
   const isPortrait = window.innerHeight > window.innerWidth;
+  // Aperçu "next" proportionnel au BS, plus petit en portrait pour tenir dans la case
   const NB = isPortrait
-    ? Math.max(12, Math.floor(BS * 0.62))
-    : Math.max(16, Math.floor(BS * 0.85));
+    ? Math.max(10, Math.floor(BS * 0.58))
+    : Math.max(14, Math.floor(BS * 0.85));
   nextCv.width  = 4 * NB;
   nextCv.height = 4 * NB;
   nextCv._nb = NB;
