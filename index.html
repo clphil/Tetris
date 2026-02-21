@@ -941,7 +941,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v21022026.2030</div>
+  <div id="version-label">v21022026.2056</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -1332,7 +1332,7 @@ function clearLines(mode = 'normal') {
 
   lines += cleared;
   level = Math.floor(lines / 10) + 1;
-  dropSpeed = Math.max(80, 850 - (level - 1) * 70);
+  dropSpeed = Math.max(55, 850 - (level - 1) * 85 - Math.floor(score / 3000) * 5);
 
   // ── Scoring spectaculaire ──
   const BASE = [0, 100, 300, 600, 1000];
