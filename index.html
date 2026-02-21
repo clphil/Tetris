@@ -270,12 +270,42 @@
       font-weight: 900;
       letter-spacing: 3px;
       text-transform: uppercase;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1;
+      gap: 1px;
+    }
+    #title-main {
       background: linear-gradient(90deg,
         #ff0000 0%, #ff6600 16%, #ffff00 32%,
         #00ff00 48%, #00aaff 64%, #aa00ff 80%, #ff00aa 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+    }
+    #ingame-gravity {
+      display: flex;
+      gap: 0px;
+      font-size: clamp(0.38rem, 1.6vw, 0.7rem);
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-weight: 900;
+      letter-spacing: clamp(1px, 0.4vw, 3px);
+      line-height: 1;
+    }
+    .igrav-l {
+      display: inline-block;
+      color: #00e8ff;
+      transform-origin: top center;
+      text-shadow:
+        0 1px 0 rgba(0,160,220,0.75),
+        0 3px 0 rgba(0,80,170,0.45),
+        0 5px 3px rgba(0,0,70,0.2);
+    }
+    /* Animation uniquement pendant le flip */
+    #ingame-gravity.flipping .igrav-l {
+      animation: gravDrop 1.6s ease-in-out infinite;
+      animation-delay: calc(var(--i) * 100ms);
     }
 
     /* ══════════════════════════════════════
@@ -677,14 +707,17 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v21022026.1212</div>
+  <div id="version-label">v21022026.1238</div>
 </div>
 
 <!-- ══ JEU ══ -->
 <div id="app">
 
   <div id="left-panel">
-    <h1 id="title">TETRIS</h1>
+    <h1 id="title">
+      <span id="title-main">TETRIS</span>
+      <span id="ingame-gravity"><span class="igrav-l" style="--i:0">G</span><span class="igrav-l" style="--i:1">R</span><span class="igrav-l" style="--i:2">A</span><span class="igrav-l" style="--i:3">V</span><span class="igrav-l" style="--i:4">I</span><span class="igrav-l" style="--i:5">T</span><span class="igrav-l" style="--i:6">Y</span></span>
+    </h1>
     <div id="dpad">
       <div class="drow">
         <button class="ctrl-btn" id="btn-up"    aria-label="Rotation">&#9650;</button>
@@ -1117,6 +1150,7 @@ function startFlip() {
   flipInProgress = true;
   current = null;
   document.getElementById('flip-btn').classList.add('hidden');
+  document.getElementById('ingame-gravity').classList.add('flipping');
 
   const wrap = document.getElementById('board-wrap');
   const HALF = 350; // ms par demi-animation
@@ -1191,6 +1225,7 @@ function animateFlipLineClear(rows) {
 }
 
 function finalizeFlip() {
+  document.getElementById('ingame-gravity').classList.remove('flipping');
   flipInProgress = false;
   spawn();
   if (over) showOverlay(false);
