@@ -352,30 +352,8 @@
     /* ══════════════════════════════════════
        BARRE DE VITESSE
     ══════════════════════════════════════ */
-    #speed-section {
-      width: 88%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-    #speed-label {
-      font-size: clamp(0.4rem, 1.4vw, 0.62rem);
-      color: #00c8ff;
-      letter-spacing: 3px;
-    }
     #speed-track {
-      width: 100%; height: 8px;
-      background: #0e0e38;
-      border: 1px solid #00c8ff;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    #speed-fill {
-      height: 100%; width: 5%;
-      background: linear-gradient(90deg, #0055ff, #00ffff);
-      border-radius: 4px;
-      transition: width 0.4s;
+      display: none;
     }
 
     /* ══════════════════════════════════════
@@ -612,8 +590,6 @@
       }
       #chute-label { font-size: clamp(0.4rem, 2.2vw, 0.58rem); }
 
-      #speed-section { width: 90%; }
-      #speed-label   { font-size: clamp(0.4rem, 2.2vw, 0.6rem); }
 
       .info-box  { width: 90%; padding: 2px 5px; }
       .box-label { font-size: clamp(0.4rem, 2.2vw, 0.6rem); letter-spacing: 2px; margin-bottom: 1px; }
@@ -707,7 +683,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v21022026.1238</div>
+  <div id="version-label">v21022026.1251</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -731,10 +707,6 @@
         <button class="ctrl-btn" id="btn-down"  aria-label="Chute rapide">&#9660;</button>
       </div>
       <div id="chute-label">CHUTE RAPIDE</div>
-    </div>
-    <div id="speed-section">
-      <div id="speed-label">VITESSE &bull;</div>
-      <div id="speed-track"><div id="speed-fill"></div></div>
     </div>
   </div>
 
@@ -1238,7 +1210,6 @@ function updateUI() {
   document.getElementById('score-val').textContent = score;
   document.getElementById('lines-val').textContent = `LIGNES : ${lines}`;
   document.getElementById('level-val').textContent = level;
-  document.getElementById('speed-fill').style.width = Math.min(100, (level - 1) * 10) + '%';
 }
 
 function showOverlay(isPause) {
