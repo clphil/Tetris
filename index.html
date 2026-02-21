@@ -508,7 +508,7 @@ function lock() {
   if (cleared) {
     score += cleared * cleared;
     lines += cleared;
-    level = Math.floor(score / 10) + 1;
+    level = Math.floor(lines / 10) + 1;
     dropSpeed = Math.max(80, 850 - (level - 1) * 75);
     updateUI();
   }
@@ -528,7 +528,7 @@ function updateUI() {
   document.getElementById('score-val').textContent = score;
   document.getElementById('lines-val').textContent = `LIGNES : ${lines}`;
   document.getElementById('level-val').textContent = level;
-  document.getElementById('speed-fill').style.width = Math.min(100, score) + '%';
+  document.getElementById('speed-fill').style.width = Math.min(100, (level - 1) * 10) + '%';
 }
 
 function showOverlay(isPause) {
