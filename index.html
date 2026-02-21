@@ -23,6 +23,10 @@
       font-family: 'Arial Black', Arial, sans-serif;
       color: #fff;
       touch-action: none;
+      overscroll-behavior: none;       /* bloque pull-to-refresh + overscroll */
+      -webkit-touch-callout: none;     /* bloque le menu long-press iOS */
+      user-select: none;               /* bloque la sélection de texte */
+      -webkit-user-select: none;
     }
 
     /* ══════════════════════════════════════
@@ -941,7 +945,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v21022026.2056</div>
+  <div id="version-label">v21022026.2147</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -2022,6 +2026,29 @@ startBtn.addEventListener('click', startGame);
 startBtn.addEventListener('touchstart', e => { e.preventDefault(); startGame(); }, { passive: false });
 
 setupCanvas();
+
+// ══════════════════════════════════════════════
+//  Blocage des gestes natifs du navigateur
+// ══════════════════════════════════════════════
+
+// Long-press → menu contextuel (Android & bureau)
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+// touchmove → swipe-back/forward + pull-to-refresh
+// Exception : le panneau tutoriel doit rester scrollable
+document.addEventListener('touchmove', e => {
+  if (!e.target.closest('#start-tuto')) e.preventDefault();
+}, { passive: false });
+
+// Gestes Safari (pinch, rotation à 2 doigts)
+document.addEventListener('gesturestart',  e => e.preventDefault());
+document.addEventListener('gesturechange', e => e.preventDefault());
+document.addEventListener('gestureend',    e => e.preventDefault());
+
+// Ctrl+scroll = zoom trackpad sur certains navigateurs desktop
+document.addEventListener('wheel', e => {
+  if (e.ctrlKey) e.preventDefault();
+}, { passive: false });
 
 // ── Service Worker (PWA installable) ──
 if ('serviceWorker' in navigator) {
