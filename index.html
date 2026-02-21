@@ -36,16 +36,28 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: clamp(20px, 5vh, 40px);
+      gap: clamp(12px, 3vh, 28px);
       z-index: 500;
+      overflow-y: auto;
+      padding: clamp(16px, 4vh, 36px) 0;
     }
     #start-screen.hidden { display: none; }
 
     #start-title {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1;
+      gap: 0;
+      margin: 0;
+    }
+    #title-tetris {
+      display: block;
       font-size: clamp(3.5rem, 20vw, 8rem);
       font-weight: 900;
       letter-spacing: clamp(6px, 4vw, 16px);
       text-transform: uppercase;
+      font-family: 'Arial Black', Arial, sans-serif;
       background: linear-gradient(90deg,
         #ff0000 0%, #ff6600 16%, #ffff00 32%,
         #00ff00 48%, #00aaff 64%, #aa00ff 80%, #ff00aa 100%);
@@ -53,6 +65,45 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
       animation: titlePulse 2.5s ease-in-out infinite;
+    }
+    #title-gravity {
+      display: flex;
+      gap: clamp(1px, 0.8vw, 5px);
+      font-size: clamp(1.1rem, 6.5vw, 2.6rem);
+      font-weight: 900;
+      font-family: 'Arial Black', Arial, sans-serif;
+      line-height: 1;
+      margin-top: clamp(2px, 0.5vh, 6px);
+    }
+    .grav-l {
+      display: inline-block;
+      color: #00e8ff;
+      transform-origin: top center;
+      animation: gravDrop 2s ease-in-out infinite;
+      animation-delay: calc(var(--i) * 110ms);
+      text-shadow:
+        0 2px 0 rgba(0,180,230,0.8),
+        0 5px 0 rgba(0,100,190,0.55),
+        0 9px 0 rgba(0,50,150,0.35),
+        0 13px 6px rgba(0,0,80,0.2);
+    }
+    @keyframes gravDrop {
+      0%, 100% {
+        transform: scaleY(1) translateY(0);
+        text-shadow:
+          0 2px 0 rgba(0,180,230,0.8),
+          0 5px 0 rgba(0,100,190,0.55),
+          0 9px 0 rgba(0,50,150,0.35),
+          0 13px 6px rgba(0,0,80,0.2);
+      }
+      45%, 55% {
+        transform: scaleY(1.28) translateY(5px);
+        text-shadow:
+          0 3px 0 rgba(0,230,255,0.95),
+          0 8px 0 rgba(0,150,220,0.7),
+          0 14px 0 rgba(0,80,180,0.45),
+          0 20px 8px rgba(0,0,100,0.18);
+      }
     }
     @keyframes titlePulse {
       0%, 100% { filter: brightness(1); }
@@ -89,6 +140,73 @@
       50%       { box-shadow: 0 0 30px #00c8ffbb, 0 0 60px #00c8ff33; }
     }
 
+    /* ═══ TUTORIEL ACCUEIL ═══ */
+    #start-tuto {
+      width: min(88vw, 360px);
+      max-height: 38vh;
+      overflow-y: auto;
+      background: rgba(6, 6, 26, 0.92);
+      border: 1px solid rgba(0, 200, 255, 0.18);
+      border-radius: 12px;
+      padding: clamp(10px, 2.2vh, 16px) clamp(12px, 3.5vw, 20px);
+      font-family: Arial, sans-serif;
+      font-size: clamp(0.6rem, 1.9vw, 0.76rem);
+      line-height: 1.55;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,200,255,0.22) transparent;
+    }
+    .tuto-section { margin-bottom: clamp(8px, 2vh, 13px); }
+    .tuto-section:last-child { margin-bottom: 0; }
+    .tuto-h {
+      color: #00c8ff;
+      font-weight: 900;
+      font-size: clamp(0.62rem, 1.9vw, 0.78rem);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      padding-bottom: 3px;
+      border-bottom: 1px solid rgba(0,200,255,0.15);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .tuto-grid {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 2px 10px;
+    }
+    .tuto-k { color: #ffdd44; font-weight: 700; white-space: nowrap; }
+    .tuto-v { color: rgba(188,193,224,0.85); }
+    .tuto-p { color: rgba(188,193,224,0.85); margin: 0; }
+    .tbadge {
+      display: inline-block;
+      padding: 0px 5px;
+      border-radius: 3px;
+      font-size: 0.82em;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .tbadge-o { background: rgba(255,120,0,0.18); color: #ff8833; border: 1px solid rgba(255,120,0,0.32); }
+    .tbadge-p { background: rgba(160,0,255,0.18); color: #bb55ff; border: 1px solid rgba(160,0,255,0.32); }
+    .tbadge-b { background: rgba(0,200,255,0.11); color: #00c8ff; border: 1px solid rgba(0,200,255,0.28); }
+
+    /* Version — centré en bas de l'écran d'accueil */
+    #version-label {
+      position: absolute;
+      bottom: 14px;
+      left: 0; right: 0;
+      text-align: center;
+      font-size: clamp(0.55rem, 2vw, 0.75rem);
+      color: rgba(130, 130, 200, 0.75);
+      font-family: Arial, sans-serif;
+      font-weight: 400;
+      letter-spacing: 2px;
+      pointer-events: none;
+    }
+
     /* ══════════════════════════════════════
        LAYOUT PAYSAGE (défaut)
        left-panel | center-panel | right-panel
@@ -115,8 +233,8 @@
 
     /* ── Canvas central ── */
     #center-panel {
-      flex: 1 1 0;           /* prend tout l'espace restant */
-      min-width: 0;          /* CRITIQUE : évite le débordement flex */
+      flex: 1 1 0;
+      min-width: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -128,6 +246,7 @@
       box-shadow: 0 0 20px #00c8ff55, 0 0 40px #00c8ff22, inset 0 0 8px #00001a;
       line-height: 0;
       flex-shrink: 0;
+      transform-origin: center center;
     }
     #board { display: block; }
 
@@ -151,12 +270,42 @@
       font-weight: 900;
       letter-spacing: 3px;
       text-transform: uppercase;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1;
+      gap: 1px;
+    }
+    #title-main {
       background: linear-gradient(90deg,
         #ff0000 0%, #ff6600 16%, #ffff00 32%,
         #00ff00 48%, #00aaff 64%, #aa00ff 80%, #ff00aa 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+    }
+    #ingame-gravity {
+      display: flex;
+      gap: 0px;
+      font-size: clamp(0.38rem, 1.6vw, 0.7rem);
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-weight: 900;
+      letter-spacing: clamp(1px, 0.4vw, 3px);
+      line-height: 1;
+    }
+    .igrav-l {
+      display: inline-block;
+      color: #00e8ff;
+      transform-origin: top center;
+      text-shadow:
+        0 1px 0 rgba(0,160,220,0.75),
+        0 3px 0 rgba(0,80,170,0.45),
+        0 5px 3px rgba(0,0,70,0.2);
+    }
+    /* Animation uniquement pendant le flip */
+    #ingame-gravity.flipping .igrav-l {
+      animation: gravDrop 1.6s ease-in-out infinite;
+      animation-delay: calc(var(--i) * 100ms);
     }
 
     /* ══════════════════════════════════════
@@ -203,30 +352,8 @@
     /* ══════════════════════════════════════
        BARRE DE VITESSE
     ══════════════════════════════════════ */
-    #speed-section {
-      width: 88%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-    #speed-label {
-      font-size: clamp(0.4rem, 1.4vw, 0.62rem);
-      color: #00c8ff;
-      letter-spacing: 3px;
-    }
     #speed-track {
-      width: 100%; height: 8px;
-      background: #0e0e38;
-      border: 1px solid #00c8ff;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    #speed-fill {
-      height: 100%; width: 5%;
-      background: linear-gradient(90deg, #0055ff, #00ffff);
-      border-radius: 4px;
-      transition: width 0.4s;
+      display: none;
     }
 
     /* ══════════════════════════════════════
@@ -303,6 +430,30 @@
     #pause-btn:active { background: #003355; }
 
     /* ══════════════════════════════════════
+       BOUTON FLIP (power-up tous les 10 lignes)
+    ══════════════════════════════════════ */
+    #flip-btn {
+      background: #1a0800;
+      border: 2px solid #ffcc00;
+      color: #ffcc00;
+      padding: clamp(4px, 1.2vw, 8px) clamp(8px, 2.5vw, 20px);
+      font-size: clamp(0.5rem, 1.6vw, 0.75rem);
+      letter-spacing: 3px;
+      font-weight: 900;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 88%;
+      animation: flipPulse 0.85s ease-in-out infinite;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #flip-btn.hidden { display: none; }
+    #flip-btn:active { background: #4a2800; }
+    @keyframes flipPulse {
+      0%, 100% { box-shadow: 0 0 8px #ffcc0055; }
+      50%       { box-shadow: 0 0 22px #ffcc00cc, 0 0 44px #ffcc0044; }
+    }
+
+    /* ══════════════════════════════════════
        OVERLAY (pause / game over)
     ══════════════════════════════════════ */
     #overlay {
@@ -356,11 +507,6 @@
 
     /* ══════════════════════════════════════
        PORTRAIT
-       ┌─────────────────┐  ← 57vh  board
-       ├────────┬────────┤  ← 43vh-14px  contrôles
-       │  left  │ right  │
-       ├────────┴────────┤  ← 14px signature
-       └─────────────────┘
     ══════════════════════════════════════ */
     @media (orientation: portrait) {
 
@@ -379,7 +525,6 @@
         align-items: stretch;
       }
 
-      /* Board — pleine largeur, moitié haute */
       #center-panel {
         grid-area: center;
         width: 100%;
@@ -393,7 +538,6 @@
         overflow: hidden;
       }
 
-      /* Contrôles gauche */
       #left-panel {
         grid-area: left;
         flex: unset;
@@ -407,7 +551,6 @@
         border-right: 1px solid #00c8ff22;
       }
 
-      /* Contrôles droite */
       #right-panel {
         grid-area: right;
         flex: unset;
@@ -420,7 +563,6 @@
         border-top: 1px solid #00c8ff44;
       }
 
-      /* Signature dans la 3e ligne de la grille → zéro chevauchement */
       #signature {
         grid-area: sig;
         position: static;
@@ -437,7 +579,6 @@
 
       #title { display: none; }
 
-      /* Boutons D-pad — vw = largeur totale en portrait */
       .ctrl-btn {
         width: clamp(38px, 11vw, 58px);
         height: clamp(38px, 11vw, 58px);
@@ -449,8 +590,6 @@
       }
       #chute-label { font-size: clamp(0.4rem, 2.2vw, 0.58rem); }
 
-      #speed-section { width: 90%; }
-      #speed-label   { font-size: clamp(0.4rem, 2.2vw, 0.6rem); }
 
       .info-box  { width: 90%; padding: 2px 5px; }
       .box-label { font-size: clamp(0.4rem, 2.2vw, 0.6rem); letter-spacing: 2px; margin-bottom: 1px; }
@@ -467,6 +606,11 @@
         padding: 4px 6px;
         font-size: clamp(0.48rem, 2.8vw, 0.72rem);
       }
+      #flip-btn {
+        width: 90%;
+        padding: 4px 6px;
+        font-size: clamp(0.48rem, 2.8vw, 0.72rem);
+      }
     }
   </style>
 </head>
@@ -474,16 +618,82 @@
 
 <!-- ══ PAGE D'ACCUEIL ══ -->
 <div id="start-screen">
-  <h1 id="start-title">TETRIS</h1>
+  <h1 id="start-title">
+    <span id="title-tetris">TETRIS</span>
+    <span id="title-gravity">
+      <span class="grav-l" style="--i:0">G</span><span class="grav-l" style="--i:1">R</span><span class="grav-l" style="--i:2">A</span><span class="grav-l" style="--i:3">V</span><span class="grav-l" style="--i:4">I</span><span class="grav-l" style="--i:5">T</span><span class="grav-l" style="--i:6">Y</span>
+    </span>
+  </h1>
   <div id="start-by">designed by Phil C.</div>
-  <button id="start-btn">&#9654;&nbsp; START</button>
+
+  <!-- ═══ TUTORIEL ═══ -->
+  <div id="start-tuto">
+
+    <!-- CONTRÔLES -->
+    <div class="tuto-section">
+      <div class="tuto-h">&#9654; Contr&ocirc;les</div>
+      <div class="tuto-grid">
+        <span class="tuto-k">&#9650;</span>
+        <span class="tuto-v">Pivote</span>
+        <span class="tuto-k">&#9664; &#9654;</span>
+        <span class="tuto-v">Bouge</span>
+        <span class="tuto-k">&#9660;</span>
+        <span class="tuto-v">Chute rapide</span>
+        <span class="tuto-k">TOUR</span>
+        <span class="tuto-v">Rotation maligne</span>
+        <span class="tuto-k">PAUSE</span>
+        <span class="tuto-v">Souffle un peu</span>
+      </div>
+    </div>
+
+    <!-- SHINY / GRENADE -->
+    <div class="tuto-section">
+      <div class="tuto-h">
+        &#10022; Pi&egrave;ce Shiny
+        <span class="tbadge tbadge-o">GRENADE</span>
+      </div>
+      <p class="tuto-p">
+        1 par sac de 7. Elle clignote, elle s'&eacute;nerve&hellip;
+        et apr&egrave;s <strong style="color:#ff8833">5s&nbsp;&#128165;</strong> tout saute !
+      </p>
+    </div>
+
+    <!-- FLIP -->
+    <div class="tuto-section">
+      <div class="tuto-h">
+        &#8645; Flip
+        <span class="tbadge tbadge-p">TOUS LES 10 LIGNES</span>
+      </div>
+      <p class="tuto-p">
+        Le plateau se retourne, tout tombe, les lignes pleines disparaissent.
+        Le chaos&nbsp;&#8212;&nbsp;mais le bon.
+      </p>
+    </div>
+
+    <!-- AUTRES FEATURES -->
+    <div class="tuto-section">
+      <div class="tuto-h">&#9998; Astuce</div>
+      <p class="tuto-p">
+        Pour plus de confort, <strong style="color:#00e8ff">ajoute l'app sur ton &eacute;cran d'accueil</strong>&nbsp;!<br>
+        iOS&nbsp;: partage &#8594; &laquo;&nbsp;Sur l'&eacute;cran d'accueil&nbsp;&raquo;<br>
+        Android&nbsp;: menu &#8594; &laquo;&nbsp;Ajouter &agrave; l'&eacute;cran d'accueil&nbsp;&raquo;
+      </p>
+    </div>
+
+  </div><!-- /start-tuto -->
+
+  <button id="start-btn">START</button>
+  <div id="version-label">v21022026.1627</div>
 </div>
 
 <!-- ══ JEU ══ -->
 <div id="app">
 
   <div id="left-panel">
-    <h1 id="title">TETRIS</h1>
+    <h1 id="title">
+      <span id="title-main">TETRIS</span>
+      <span id="ingame-gravity"><span class="igrav-l" style="--i:0">G</span><span class="igrav-l" style="--i:1">R</span><span class="igrav-l" style="--i:2">A</span><span class="igrav-l" style="--i:3">V</span><span class="igrav-l" style="--i:4">I</span><span class="igrav-l" style="--i:5">T</span><span class="igrav-l" style="--i:6">Y</span></span>
+    </h1>
     <div id="dpad">
       <div class="drow">
         <button class="ctrl-btn" id="btn-up"    aria-label="Rotation">&#9650;</button>
@@ -497,10 +707,6 @@
         <button class="ctrl-btn" id="btn-down"  aria-label="Chute rapide">&#9660;</button>
       </div>
       <div id="chute-label">CHUTE RAPIDE</div>
-    </div>
-    <div id="speed-section">
-      <div id="speed-label">VITESSE &bull;</div>
-      <div id="speed-track"><div id="speed-fill"></div></div>
     </div>
   </div>
 
@@ -525,6 +731,7 @@
       <span>TOUR</span>
     </button>
     <button id="pause-btn">PAUSE</button>
+    <button id="flip-btn" class="hidden">&#8645; FLIP</button>
     <div class="info-box">
       <div class="box-label">NIVEAU</div>
       <div id="level-val">1</div>
@@ -565,6 +772,7 @@ const SHAPES = {
 };
 
 const KICKS = [0, -1, 1, -2, 2];
+const GRENADE_FUSE = 5000; // ms avant explosion
 
 // ══════════════════════════════════════════════
 //  Canvas
@@ -580,13 +788,10 @@ function isPortrait() { return window.innerHeight > window.innerWidth; }
 
 function calcBS() {
   if (isPortrait()) {
-    // Zone board = 57vh - 8px de padding
     const maxH = window.innerHeight * 0.57 - 8;
-    // Largeur totale (le board span les 2 colonnes)
     const maxW = window.innerWidth * 0.88;
     return Math.max(10, Math.min(30, Math.floor(maxH / ROWS), Math.floor(maxW / COLS)));
   }
-  // Paysage : panneau central = ~46% de la largeur
   const maxH = window.innerHeight * 0.96;
   const maxW  = window.innerWidth  * 0.46;
   return Math.max(10, Math.min(32, Math.floor(maxH / ROWS), Math.floor(maxW / COLS)));
@@ -605,6 +810,89 @@ function setupCanvas() {
 }
 
 // ══════════════════════════════════════════════
+//  Particules
+// ══════════════════════════════════════════════
+let particles = [];
+
+function spawnExplosion(boardX, boardY, color) {
+  // Plusieurs salves depuis chaque cellule
+  const px = (boardX + 0.5) * BS;
+  const py = (boardY + 0.5) * BS;
+  const count = 14 + Math.floor(Math.random() * 8);
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (1.8 + Math.random() * 4.2) * (BS / 20);
+    const warm  = Math.random();
+    // Couleur : mélange de la couleur de la pièce + orange/blanc
+    const r2 = 255, g2 = Math.round(warm > 0.5 ? 200 + Math.random() * 55 : 60 + Math.random() * 80), b2 = Math.round(warm > 0.7 ? 100 : 10);
+    particles.push({
+      x: px + (Math.random() - 0.5) * BS,
+      y: py + (Math.random() - 0.5) * BS,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1.5,
+      color: Math.random() < 0.4 ? color : `rgb(${r2},${g2},${b2})`,
+      size: Math.max(1.5, BS * (0.12 + Math.random() * 0.22)),
+      life: 1.0,
+      decay: 0.018 + Math.random() * 0.022
+    });
+  }
+}
+
+// Explosion ligne — éclat de pixels depuis chaque cellule, intensité ∝ nb lignes
+function spawnLineExplosion(boardX, boardY, color, numLines) {
+  const px = (boardX + 0.5) * BS;
+  const py = (boardY + 0.5) * BS;
+  const speedScale = 1 + (numLines - 1) * 0.22;
+  const sizeScale  = 1 + (numLines - 1) * 0.12;
+  const decayScale = Math.max(0.5, 1 - (numLines - 1) * 0.05);
+  const count = 7 + Math.floor(Math.random() * 6);
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (1.6 + Math.random() * 3.5) * (BS / 20) * speedScale;
+    const warm  = Math.random();
+    const g2 = Math.round(warm > 0.5 ? 200 + Math.random() * 55 : 60 + Math.random() * 80);
+    const b2  = Math.round(warm > 0.7 ? 100 : 10);
+    // 60 % couleur de la pièce, 20 % blanc étincelant, 20 % orange chaud
+    const col = Math.random() < 0.6 ? color
+              : Math.random() < 0.5 ? '#ffffff'
+              : `rgb(255,${g2},${b2})`;
+    particles.push({
+      x: px + (Math.random() - 0.5) * BS * 0.8,
+      y: py + (Math.random() - 0.5) * BS * 0.8,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1.2 * speedScale,
+      color: col,
+      size: Math.max(1.5, BS * (0.10 + Math.random() * 0.18) * sizeScale),
+      life: 1.0,
+      decay: (0.014 + Math.random() * 0.018) * decayScale
+    });
+  }
+}
+
+function updateParticles(dt) {
+  const g = 0.25 * dt / 16; // gravité normalisée
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x  += p.vx * dt / 16;
+    p.y  += p.vy * dt / 16;
+    p.vy += g;
+    p.vx *= 0.985;
+    p.life -= p.decay * dt / 16;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+function drawParticles() {
+  for (const p of particles) {
+    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.fillStyle = p.color;
+    const s = Math.round(p.size);
+    ctx.fillRect(Math.round(p.x - s / 2), Math.round(p.y - s / 2), s, s);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ══════════════════════════════════════════════
 //  État du jeu
 // ══════════════════════════════════════════════
 let board, current, nextPiece;
@@ -613,31 +901,49 @@ let paused, over;
 let dropSpeed, dropAcc, lastTs, rafId;
 let fastDrop = false;
 let bag = [];
+let shinyCounter = 0; // ID unique par pièce grenade
+let flipAvailable    = false;
+let flipInProgress   = false;
+let lastFlipMilestone = 0;
+let flipHighlightRows = []; // lignes à flasher pendant l'anim de suppression
 
+// ══════════════════════════════════════════════
+//  Sac de pièces — exactement 1 shiny par sac
+// ══════════════════════════════════════════════
 function fillBag() {
-  bag = Object.keys(SHAPES);
-  for (let i = bag.length - 1; i > 0; i--) {
+  const types = Object.keys(SHAPES);
+  for (let i = types.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [bag[i], bag[j]] = [bag[j], bag[i]];
+    [types[i], types[j]] = [types[j], types[i]];
   }
+  // Exactement 1 pièce grenade par sac de 7
+  const shinyPos = Math.floor(Math.random() * types.length);
+  bag = types.map((type, i) => ({ type, shiny: i === shinyPos }));
 }
 
 function drawFromBag() {
   if (!bag.length) fillBag();
-  const type = bag.pop();
+  const { type, shiny } = bag.pop();
   return {
     type, color: COLORS[type],
+    shiny,
     shape: SHAPES[type].map(r => [...r]),
     x: Math.floor(COLS / 2) - Math.floor(SHAPES[type][0].length / 2),
     y: 0
   };
 }
 
+// ══════════════════════════════════════════════
+//  Init
+// ══════════════════════════════════════════════
 function initGame() {
   board     = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
   score     = 0; lines = 0; level = 1;
   dropSpeed = 850; dropAcc = 0; lastTs = 0;
   paused    = false; over = false; fastDrop = false;
+  particles = [];
+  flipAvailable = false; flipInProgress = false; lastFlipMilestone = 0;
+  document.getElementById('flip-btn').classList.add('hidden');
   bag = []; fillBag();
   nextPiece = drawFromBag();
   spawn();
@@ -654,7 +960,7 @@ function spawn() {
 }
 
 // ══════════════════════════════════════════════
-//  Physique
+//  Physique de base
 // ══════════════════════════════════════════════
 function valid(piece, dx, dy, shape) {
   const s = shape || piece.shape;
@@ -691,30 +997,85 @@ function ghostDY() {
   return dy;
 }
 
+// ══════════════════════════════════════════════
+//  Gravité colonne par colonne (après explosion)
+// ══════════════════════════════════════════════
+function applyGravity() {
+  for (let c = 0; c < COLS; c++) {
+    // Collecte les cellules non-nulles de bas en haut
+    const cells = [];
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (board[r][c]) cells.push(board[r][c]);
+    }
+    // Vide la colonne puis remplit depuis le bas
+    for (let r = 0; r < ROWS; r++) board[r][c] = null;
+    for (let i = 0; i < cells.length; i++) {
+      board[ROWS - 1 - i][c] = cells[i];
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+//  Effacement de lignes complètes
+// ══════════════════════════════════════════════
+function clearLines() {
+  // Repérer toutes les lignes complètes
+  const fullRows = [];
+  for (let r = 0; r < ROWS; r++) {
+    if (board[r].every(v => v !== null)) fullRows.push(r);
+  }
+  const cleared = fullRows.length;
+  if (!cleared) return 0;
+
+  // Spawn des pixels AVANT suppression (indices encore valides)
+  for (const r of fullRows) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = board[r][c];
+      if (cell) spawnLineExplosion(c, r, cell.color, cleared);
+    }
+  }
+
+  // Supprimer les lignes complètes d'un coup
+  board = board.filter((_, idx) => !fullRows.includes(idx));
+  while (board.length < ROWS) board.unshift(Array(COLS).fill(null));
+
+  score += cleared * cleared * 100;
+  lines += cleared;
+  level = Math.floor(lines / 10) + 1;
+  dropSpeed = Math.max(120, 850 - (level - 1) * 50);
+  // Débloque le bouton FLIP à chaque nouveau palier de 10 lignes
+  const milestone = Math.floor(lines / 10) * 10;
+  if (milestone > 0 && milestone > lastFlipMilestone) {
+    lastFlipMilestone = milestone;
+    flipAvailable = true;
+    document.getElementById('flip-btn').classList.remove('hidden');
+  }
+  updateUI();
+  return cleared;
+}
+
+// ══════════════════════════════════════════════
+//  Pose de pièce
+// ══════════════════════════════════════════════
 function lock() {
+  const placedAt = current.shiny ? Date.now() : null;
+  const sid      = current.shiny ? ++shinyCounter : null;
+
   current.shape.forEach((row, r) =>
     row.forEach((cell, c) => {
       if (cell) {
         const ny = current.y + r, nx = current.x + c;
-        if (ny >= 0) board[ny][nx] = current.color;
+        if (ny >= 0) board[ny][nx] = {
+          color: current.color,
+          shiny: !!current.shiny,
+          placedAt,
+          sid
+        };
       }
     })
   );
-  let cleared = 0;
-  for (let r = ROWS - 1; r >= 0; r--) {
-    if (board[r].every(v => v !== null)) {
-      board.splice(r, 1);
-      board.unshift(Array(COLS).fill(null));
-      cleared++; r++;
-    }
-  }
-  if (cleared) {
-    score += cleared * cleared;
-    lines += cleared;
-    level = Math.floor(lines / 10) + 1;
-    dropSpeed = Math.max(80, 850 - (level - 1) * 75);
-    updateUI();
-  }
+
+  clearLines();
   spawn();
 }
 
@@ -725,13 +1086,171 @@ function hardDrop() {
 }
 
 // ══════════════════════════════════════════════
+//  EXPLOSION — Mécanique grenade
+// ══════════════════════════════════════════════
+function checkShinyExplosions() {
+  const now = Date.now();
+
+  // Regroupe les cellules shiny prêtes à exploser par sid
+  const groups = {};
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = board[r][c];
+      if (cell && cell.shiny && cell.placedAt && now - cell.placedAt >= GRENADE_FUSE) {
+        const key = cell.sid;
+        if (!groups[key]) groups[key] = { color: cell.color, cells: [] };
+        groups[key].cells.push({ r, c });
+      }
+    }
+  }
+
+  let anyExploded = false;
+  for (const { color, cells } of Object.values(groups)) {
+    // Collecte : la pièce shiny + toutes les cellules qui la touchent
+    const toDestroy = new Set(cells.map(({ r, c }) => `${r},${c}`));
+    for (const { r, c } of cells) {
+      for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && board[nr][nc])
+          toDestroy.add(`${nr},${nc}`);
+      }
+    }
+    // Particules + suppression
+    for (const key of toDestroy) {
+      const [r, c] = key.split(',').map(Number);
+      spawnExplosion(c, r, board[r][c]?.color || color);
+      board[r][c] = null;
+    }
+    score += toDestroy.size * 20;
+    anyExploded = true;
+  }
+
+  if (anyExploded) {
+    applyGravity();
+    clearLines(); // des lignes peuvent se former après la chute
+    updateUI();
+  }
+}
+
+// ══════════════════════════════════════════════
+//  FLIP — Miroir vertical + physique animée
+// ══════════════════════════════════════════════
+function doFlipBoard() {
+  // Miroir vertical pur : ligne r ↔ ligne ROWS-1-r, colonnes inchangées
+  const nb = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      if (board[r][c]) nb[ROWS - 1 - r][c] = board[r][c];
+  board = nb;
+}
+
+// Un seul pas de gravité : chaque bloc flottant tombe d'une case
+function gravityStepOnce() {
+  let moved = false;
+  for (let r = ROWS - 2; r >= 0; r--)
+    for (let c = 0; c < COLS; c++)
+      if (board[r][c] && !board[r + 1][c]) {
+        board[r + 1][c] = board[r][c];
+        board[r][c] = null;
+        moved = true;
+      }
+  return moved;
+}
+
+function startFlip() {
+  if (flipInProgress || !flipAvailable || over) return;
+  flipAvailable  = false;
+  flipInProgress = true;
+  current = null;
+  document.getElementById('flip-btn').classList.add('hidden');
+  document.getElementById('ingame-gravity').classList.add('flipping');
+
+  const wrap = document.getElementById('board-wrap');
+  const HALF = 350; // ms par demi-animation
+
+  // Phase 1 : repli (scaleY 1 → ~0)
+  wrap.style.transition = `transform ${HALF}ms cubic-bezier(0.55,0,1,0.45)`;
+  wrap.style.transform  = 'scaleY(0.02)';
+
+  setTimeout(() => {
+    // Mi-chemin : appliquer le miroir vertical
+    doFlipBoard();
+    drawBoard();
+
+    // Phase 2 : dépli (scaleY 0 → 1)
+    wrap.style.transition = `transform ${HALF}ms cubic-bezier(0,0.55,0.45,1)`;
+    wrap.style.transform  = 'scaleY(1)';
+
+    setTimeout(() => {
+      wrap.style.transition = '';
+      wrap.style.transform  = '';
+      // Les blocs tombent maintenant, animés pas à pas
+      animateGravityThenClear();
+    }, HALF);
+  }, HALF);
+}
+
+// Fait tomber les blocs case par case puis gère les lignes complètes
+function animateGravityThenClear() {
+  const STEP_MS = 52;
+
+  function step() {
+    const moved = gravityStepOnce();
+    drawBoard();
+    if (moved) {
+      setTimeout(step, STEP_MS);
+    } else {
+      // Gravité stabilisée — chercher les lignes complètes
+      const fullRows = [];
+      for (let r = 0; r < ROWS; r++)
+        if (board[r].every(v => v !== null)) fullRows.push(r);
+
+      if (fullRows.length > 0) {
+        animateFlipLineClear(fullRows);
+      } else {
+        finalizeFlip();
+      }
+    }
+  }
+  step();
+}
+
+// Flash blanc des lignes complètes puis suppression
+function animateFlipLineClear(rows) {
+  let count = 0;
+  const FLASH_MS = 110;
+
+  function flash() {
+    flipHighlightRows = (count % 2 === 0) ? rows : [];
+    drawBoard();
+    count++;
+    if (count < 6) {
+      setTimeout(flash, FLASH_MS);
+    } else {
+      flipHighlightRows = [];
+      clearLines();
+      updateUI();
+      drawBoard();
+      finalizeFlip();
+    }
+  }
+  flash();
+}
+
+function finalizeFlip() {
+  document.getElementById('ingame-gravity').classList.remove('flipping');
+  flipInProgress = false;
+  spawn();
+  if (over) showOverlay(false);
+}
+
+// ══════════════════════════════════════════════
 //  UI
 // ══════════════════════════════════════════════
 function updateUI() {
   document.getElementById('score-val').textContent = score;
   document.getElementById('lines-val').textContent = `LIGNES : ${lines}`;
   document.getElementById('level-val').textContent = level;
-  document.getElementById('speed-fill').style.width = Math.min(100, (level - 1) * 10) + '%';
 }
 
 function showOverlay(isPause) {
@@ -753,9 +1272,9 @@ function hideOverlay() {
 }
 
 // ══════════════════════════════════════════════
-//  Dessin
+//  Dessin d'un bloc
 // ══════════════════════════════════════════════
-function drawBlock(c2d, x, y, color, bs) {
+function drawBlock(c2d, x, y, color, bs, shiny, placedAt) {
   c2d.fillStyle = color;
   c2d.fillRect(x * bs + 1, y * bs + 1, bs - 2, bs - 2);
   const hl = Math.max(2, Math.floor(bs * 0.18));
@@ -765,8 +1284,44 @@ function drawBlock(c2d, x, y, color, bs) {
   c2d.fillStyle = 'rgba(0,0,0,0.4)';
   c2d.fillRect(x * bs + bs - hl - 1, y * bs + 1, hl, bs - 2);
   c2d.fillRect(x * bs + 1, y * bs + bs - hl - 1, bs - 2, hl);
+
+  if (shiny) {
+    let progress = 0;
+    let pulseFreq = 1;
+
+    if (placedAt) {
+      // Mèche qui s'accélère : 0→5s, fréquence x1→x10
+      progress  = Math.min(1, (Date.now() - placedAt) / GRENADE_FUSE);
+      pulseFreq = 1 + 9 * progress;
+    }
+
+    const pulse = 0.55 + 0.45 * Math.sin(performance.now() / 250 * pulseFreq * Math.PI * 2);
+
+    // Couleur : or → orange → rouge selon la progression de la mèche
+    const gv  = Math.round(240 - 210 * progress);  // 240 → 30
+    const bv  = Math.round(60  -  60 * progress);  // 60  → 0
+    const glowColor = `rgba(255,${gv},${bv},0.9)`;
+    const lineColor = `rgba(255,${Math.min(255, gv + 30)},${bv + 20},${pulse})`;
+
+    c2d.save();
+    c2d.shadowColor = glowColor;
+    c2d.shadowBlur  = bs * (0.55 + progress * 0.9); // halo grossit
+    c2d.strokeStyle = lineColor;
+    c2d.lineWidth   = Math.max(1.5, bs * (0.09 + progress * 0.12));
+    c2d.strokeRect(x * bs + 1.5, y * bs + 1.5, bs - 3, bs - 3);
+    c2d.restore();
+
+    // Dernière seconde : clignotement du remplissage
+    if (progress > 0.8 && pulse > 0.9) {
+      c2d.fillStyle = `rgba(255,80,0,${(progress - 0.8) * 0.35})`;
+      c2d.fillRect(x * bs + 2, y * bs + 2, bs - 4, bs - 4);
+    }
+  }
 }
 
+// ══════════════════════════════════════════════
+//  Dessin du plateau
+// ══════════════════════════════════════════════
 function drawBoard() {
   ctx.fillStyle = '#000014';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -776,8 +1331,18 @@ function drawBoard() {
       ctx.strokeRect(c * BS, r * BS, BS, BS);
 
   board.forEach((row, r) =>
-    row.forEach((color, c) => { if (color) drawBlock(ctx, c, r, color, BS); })
+    row.forEach((cell, c) => {
+      if (cell) drawBlock(ctx, c, r, cell.color, BS, cell.shiny, cell.placedAt);
+    })
   );
+
+  // Flash des lignes complètes pendant l'animation de flip
+  if (flipHighlightRows.length > 0) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.82)';
+    flipHighlightRows.forEach(r => ctx.fillRect(0, r * BS, canvas.width, BS));
+    ctx.restore();
+  }
 
   if (current && !over) {
     const gd = ghostDY();
@@ -792,10 +1357,13 @@ function drawBoard() {
     }
     current.shape.forEach((row, r) =>
       row.forEach((cell, c) => {
-        if (cell) drawBlock(ctx, current.x + c, current.y + r, current.color, BS);
+        if (cell) drawBlock(ctx, current.x + c, current.y + r, current.color, BS, current.shiny, null);
       })
     );
   }
+
+  // Particules par-dessus tout
+  drawParticles();
 
   if (paused && !over) {
     ctx.fillStyle = 'rgba(0,0,15,0.65)';
@@ -817,14 +1385,7 @@ function drawNext() {
   const oy = Math.floor((4 - s.length) / 2);
   s.forEach((row, r) =>
     row.forEach((cell, c) => {
-      if (cell) {
-        nextCtx.fillStyle = nextPiece.color;
-        nextCtx.fillRect((c + ox) * NB + 1, (r + oy) * NB + 1, NB - 2, NB - 2);
-        nextCtx.fillStyle = 'rgba(255,255,255,0.35)';
-        const hl = Math.max(2, Math.floor(NB * 0.18));
-        nextCtx.fillRect((c + ox) * NB + 1, (r + oy) * NB + 1, NB - 2, hl);
-        nextCtx.fillRect((c + ox) * NB + 1, (r + oy) * NB + 1, hl, NB - 2);
-      }
+      if (cell) drawBlock(nextCtx, c + ox, r + oy, nextPiece.color, NB, nextPiece.shiny, null);
     })
   );
 }
@@ -833,10 +1394,11 @@ function drawNext() {
 //  Boucle de jeu
 // ══════════════════════════════════════════════
 function loop(ts) {
+  const dt = lastTs ? ts - lastTs : 16;
+  lastTs = ts;
+
   if (!over) {
-    const dt = lastTs ? ts - lastTs : 0;
-    lastTs = ts;
-    if (!paused && current) {
+    if (!paused && !flipInProgress && current) {
       const spd = fastDrop ? Math.min(40, dropSpeed * 0.05) : dropSpeed;
       dropAcc += dt;
       if (dropAcc >= spd) {
@@ -845,6 +1407,11 @@ function loop(ts) {
         else lock();
       }
     }
+
+    // Grenades — suspendues pendant le flip
+    if (!paused && !flipInProgress) checkShinyExplosions();
+
+    updateParticles(dt);
     drawBoard();
     drawNext();
   }
@@ -859,7 +1426,10 @@ function btn(id, onPress, onRelease) {
   const press = e => { e.preventDefault(); if (onPress) onPress(); };
   const rel   = e => { e.preventDefault(); if (onRelease) onRelease(); };
   el.addEventListener('touchstart', press, { passive: false });
-  if (onRelease) el.addEventListener('touchend', rel, { passive: false });
+  if (onRelease) {
+    el.addEventListener('touchend',    rel, { passive: false });
+    el.addEventListener('touchcancel', rel, { passive: false });
+  }
   el.addEventListener('mousedown', press);
   if (onRelease) el.addEventListener('mouseup', rel);
   el.addEventListener('click', press);
@@ -870,6 +1440,7 @@ btn('btn-left',  () => { if (!paused && !over && current && valid(current, -1, 0
 btn('btn-right', () => { if (!paused && !over && current && valid(current,  1, 0)) current.x++; });
 btn('btn-down',  () => { fastDrop = true; }, () => { fastDrop = false; });
 btn('tour-btn',  () => rotate());
+btn('flip-btn',  () => startFlip());
 
 document.getElementById('pause-btn').addEventListener('click', togglePause);
 document.getElementById('pause-btn').addEventListener('touchstart', e => { e.preventDefault(); togglePause(); }, { passive: false });
@@ -908,6 +1479,9 @@ document.addEventListener('keyup', e => {
   delete held[e.code];
   if (e.key === 'ArrowDown') fastDrop = false;
 });
+document.addEventListener('mouseup',    () => { fastDrop = false; });
+document.addEventListener('touchend',   () => { fastDrop = false; });
+document.addEventListener('touchcancel',() => { fastDrop = false; });
 
 // ══════════════════════════════════════════════
 //  Swipe sur le canvas
@@ -952,7 +1526,6 @@ const startBtn = document.getElementById('start-btn');
 startBtn.addEventListener('click', startGame);
 startBtn.addEventListener('touchstart', e => { e.preventDefault(); startGame(); }, { passive: false });
 
-// Init canvas pour le prérendu (pas de boucle de jeu)
 setupCanvas();
 
 // ── Service Worker (PWA installable) ──
