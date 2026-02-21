@@ -859,7 +859,10 @@ function btn(id, onPress, onRelease) {
   const press = e => { e.preventDefault(); if (onPress) onPress(); };
   const rel   = e => { e.preventDefault(); if (onRelease) onRelease(); };
   el.addEventListener('touchstart', press, { passive: false });
-  if (onRelease) el.addEventListener('touchend', rel, { passive: false });
+  if (onRelease) {
+    el.addEventListener('touchend',    rel, { passive: false });
+    el.addEventListener('touchcancel', rel, { passive: false });
+  }
   el.addEventListener('mousedown', press);
   if (onRelease) el.addEventListener('mouseup', rel);
   el.addEventListener('click', press);
@@ -908,6 +911,10 @@ document.addEventListener('keyup', e => {
   delete held[e.code];
   if (e.key === 'ArrowDown') fastDrop = false;
 });
+// Filet de sécurité : si le doigt/la souris est relâché hors du bouton DOWN
+document.addEventListener('mouseup',    () => { fastDrop = false; });
+document.addEventListener('touchend',   () => { fastDrop = false; });
+document.addEventListener('touchcancel',() => { fastDrop = false; });
 
 // ══════════════════════════════════════════════
 //  Swipe sur le canvas
