@@ -89,6 +89,19 @@
       50%       { box-shadow: 0 0 30px #00c8ffbb, 0 0 60px #00c8ff33; }
     }
 
+    /* Version — coin bas-droit de l'écran d'accueil */
+    #version-label {
+      position: absolute;
+      bottom: 10px;
+      right: 14px;
+      font-size: clamp(0.42rem, 1.5vw, 0.56rem);
+      color: rgba(80, 80, 150, 0.55);
+      font-family: Arial, sans-serif;
+      font-weight: 400;
+      letter-spacing: 1px;
+      pointer-events: none;
+    }
+
     /* ══════════════════════════════════════
        LAYOUT PAYSAGE (défaut)
        left-panel | center-panel | right-panel
@@ -115,8 +128,8 @@
 
     /* ── Canvas central ── */
     #center-panel {
-      flex: 1 1 0;           /* prend tout l'espace restant */
-      min-width: 0;          /* CRITIQUE : évite le débordement flex */
+      flex: 1 1 0;
+      min-width: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -356,11 +369,6 @@
 
     /* ══════════════════════════════════════
        PORTRAIT
-       ┌─────────────────┐  ← 57vh  board
-       ├────────┬────────┤  ← 43vh-14px  contrôles
-       │  left  │ right  │
-       ├────────┴────────┤  ← 14px signature
-       └─────────────────┘
     ══════════════════════════════════════ */
     @media (orientation: portrait) {
 
@@ -379,7 +387,6 @@
         align-items: stretch;
       }
 
-      /* Board — pleine largeur, moitié haute */
       #center-panel {
         grid-area: center;
         width: 100%;
@@ -393,7 +400,6 @@
         overflow: hidden;
       }
 
-      /* Contrôles gauche */
       #left-panel {
         grid-area: left;
         flex: unset;
@@ -407,7 +413,6 @@
         border-right: 1px solid #00c8ff22;
       }
 
-      /* Contrôles droite */
       #right-panel {
         grid-area: right;
         flex: unset;
@@ -420,7 +425,6 @@
         border-top: 1px solid #00c8ff44;
       }
 
-      /* Signature dans la 3e ligne de la grille → zéro chevauchement */
       #signature {
         grid-area: sig;
         position: static;
@@ -437,7 +441,6 @@
 
       #title { display: none; }
 
-      /* Boutons D-pad — vw = largeur totale en portrait */
       .ctrl-btn {
         width: clamp(38px, 11vw, 58px);
         height: clamp(38px, 11vw, 58px);
@@ -477,6 +480,7 @@
   <h1 id="start-title">TETRIS</h1>
   <div id="start-by">designed by Phil C.</div>
   <button id="start-btn">START</button>
+  <div id="version-label">v21022026.1143</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -565,6 +569,7 @@ const SHAPES = {
 };
 
 const KICKS = [0, -1, 1, -2, 2];
+const GRENADE_FUSE = 5000; // ms avant explosion
 
 // ══════════════════════════════════════════════
 //  Canvas
@@ -580,13 +585,10 @@ function isPortrait() { return window.innerHeight > window.innerWidth; }
 
 function calcBS() {
   if (isPortrait()) {
-    // Zone board = 57vh - 8px de padding
     const maxH = window.innerHeight * 0.57 - 8;
-    // Largeur totale (le board span les 2 colonnes)
     const maxW = window.innerWidth * 0.88;
     return Math.max(10, Math.min(30, Math.floor(maxH / ROWS), Math.floor(maxW / COLS)));
   }
-  // Paysage : panneau central = ~46% de la largeur
   const maxH = window.innerHeight * 0.96;
   const maxW  = window.innerWidth  * 0.46;
   return Math.max(10, Math.min(32, Math.floor(maxH / ROWS), Math.floor(maxW / COLS)));
@@ -605,6 +607,58 @@ function setupCanvas() {
 }
 
 // ══════════════════════════════════════════════
+//  Particules
+// ══════════════════════════════════════════════
+let particles = [];
+
+function spawnExplosion(boardX, boardY, color) {
+  // Plusieurs salves depuis chaque cellule
+  const px = (boardX + 0.5) * BS;
+  const py = (boardY + 0.5) * BS;
+  const count = 14 + Math.floor(Math.random() * 8);
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (1.8 + Math.random() * 4.2) * (BS / 20);
+    const warm  = Math.random();
+    // Couleur : mélange de la couleur de la pièce + orange/blanc
+    const r2 = 255, g2 = Math.round(warm > 0.5 ? 200 + Math.random() * 55 : 60 + Math.random() * 80), b2 = Math.round(warm > 0.7 ? 100 : 10);
+    particles.push({
+      x: px + (Math.random() - 0.5) * BS,
+      y: py + (Math.random() - 0.5) * BS,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1.5,
+      color: Math.random() < 0.4 ? color : `rgb(${r2},${g2},${b2})`,
+      size: Math.max(1.5, BS * (0.12 + Math.random() * 0.22)),
+      life: 1.0,
+      decay: 0.018 + Math.random() * 0.022
+    });
+  }
+}
+
+function updateParticles(dt) {
+  const g = 0.25 * dt / 16; // gravité normalisée
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x  += p.vx * dt / 16;
+    p.y  += p.vy * dt / 16;
+    p.vy += g;
+    p.vx *= 0.985;
+    p.life -= p.decay * dt / 16;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+function drawParticles() {
+  for (const p of particles) {
+    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.fillStyle = p.color;
+    const s = Math.round(p.size);
+    ctx.fillRect(Math.round(p.x - s / 2), Math.round(p.y - s / 2), s, s);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ══════════════════════════════════════════════
 //  État du jeu
 // ══════════════════════════════════════════════
 let board, current, nextPiece;
@@ -613,17 +667,20 @@ let paused, over;
 let dropSpeed, dropAcc, lastTs, rafId;
 let fastDrop = false;
 let bag = [];
+let shinyCounter = 0; // ID unique par pièce grenade
 
+// ══════════════════════════════════════════════
+//  Sac de pièces — exactement 1 shiny par sac
+// ══════════════════════════════════════════════
 function fillBag() {
   const types = Object.keys(SHAPES);
   for (let i = types.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [types[i], types[j]] = [types[j], types[i]];
   }
-  // Exactement 2 pièces shiny par sac de 7
-  const shinyIdx = new Set();
-  while (shinyIdx.size < 2) shinyIdx.add(Math.floor(Math.random() * types.length));
-  bag = types.map((type, i) => ({ type, shiny: shinyIdx.has(i) }));
+  // Exactement 1 pièce grenade par sac de 7
+  const shinyPos = Math.floor(Math.random() * types.length);
+  bag = types.map((type, i) => ({ type, shiny: i === shinyPos }));
 }
 
 function drawFromBag() {
@@ -638,11 +695,15 @@ function drawFromBag() {
   };
 }
 
+// ══════════════════════════════════════════════
+//  Init
+// ══════════════════════════════════════════════
 function initGame() {
   board     = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
   score     = 0; lines = 0; level = 1;
   dropSpeed = 850; dropAcc = 0; lastTs = 0;
   paused    = false; over = false; fastDrop = false;
+  particles = [];
   bag = []; fillBag();
   nextPiece = drawFromBag();
   spawn();
@@ -659,7 +720,7 @@ function spawn() {
 }
 
 // ══════════════════════════════════════════════
-//  Physique
+//  Physique de base
 // ══════════════════════════════════════════════
 function valid(piece, dx, dy, shape) {
   const s = shape || piece.shape;
@@ -696,37 +757,68 @@ function ghostDY() {
   return dy;
 }
 
-function lock() {
-  current.shape.forEach((row, r) =>
-    row.forEach((cell, c) => {
-      if (cell) {
-        const ny = current.y + r, nx = current.x + c;
-        if (ny >= 0) board[ny][nx] = { color: current.color, shiny: !!current.shiny };
-      }
-    })
-  );
+// ══════════════════════════════════════════════
+//  Gravité colonne par colonne (après explosion)
+// ══════════════════════════════════════════════
+function applyGravity() {
+  for (let c = 0; c < COLS; c++) {
+    // Collecte les cellules non-nulles de bas en haut
+    const cells = [];
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (board[r][c]) cells.push(board[r][c]);
+    }
+    // Vide la colonne puis remplit depuis le bas
+    for (let r = 0; r < ROWS; r++) board[r][c] = null;
+    for (let i = 0; i < cells.length; i++) {
+      board[ROWS - 1 - i][c] = cells[i];
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+//  Effacement de lignes complètes
+// ══════════════════════════════════════════════
+function clearLines() {
   let cleared = 0;
-  const shinyColors = new Set();
   for (let r = ROWS - 1; r >= 0; r--) {
     if (board[r].every(v => v !== null)) {
-      board[r].forEach(cell => { if (cell && cell.shiny) shinyColors.add(cell.color); });
       board.splice(r, 1);
       board.unshift(Array(COLS).fill(null));
       cleared++; r++;
     }
   }
-  if (shinyColors.size > 0) {
-    for (let r = 0; r < ROWS; r++)
-      for (let c = 0; c < COLS; c++)
-        if (board[r][c] && shinyColors.has(board[r][c].color)) board[r][c] = null;
-  }
   if (cleared) {
-    score += cleared * cleared + (shinyColors.size > 0 ? cleared * 3 : 0);
+    score += cleared * cleared * 100;
     lines += cleared;
     level = Math.floor(lines / 10) + 1;
     dropSpeed = Math.max(120, 850 - (level - 1) * 50);
     updateUI();
   }
+  return cleared;
+}
+
+// ══════════════════════════════════════════════
+//  Pose de pièce
+// ══════════════════════════════════════════════
+function lock() {
+  const placedAt = current.shiny ? Date.now() : null;
+  const sid      = current.shiny ? ++shinyCounter : null;
+
+  current.shape.forEach((row, r) =>
+    row.forEach((cell, c) => {
+      if (cell) {
+        const ny = current.y + r, nx = current.x + c;
+        if (ny >= 0) board[ny][nx] = {
+          color: current.color,
+          shiny: !!current.shiny,
+          placedAt,
+          sid
+        };
+      }
+    })
+  );
+
+  clearLines();
   spawn();
 }
 
@@ -734,6 +826,42 @@ function hardDrop() {
   if (!current || paused || over) return;
   current.y += ghostDY();
   lock();
+}
+
+// ══════════════════════════════════════════════
+//  EXPLOSION — Mécanique grenade
+// ══════════════════════════════════════════════
+function checkShinyExplosions() {
+  const now = Date.now();
+
+  // Regroupe les cellules shiny prêtes à exploser par sid
+  const groups = {};
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = board[r][c];
+      if (cell && cell.shiny && cell.placedAt && now - cell.placedAt >= GRENADE_FUSE) {
+        const key = cell.sid;
+        if (!groups[key]) groups[key] = { color: cell.color, cells: [] };
+        groups[key].cells.push({ r, c });
+      }
+    }
+  }
+
+  let anyExploded = false;
+  for (const { color, cells } of Object.values(groups)) {
+    // Particules depuis chaque cellule de la pièce
+    cells.forEach(({ r, c }) => spawnExplosion(c, r, color));
+    // Supprime les cellules du plateau
+    cells.forEach(({ r, c }) => { board[r][c] = null; });
+    score += cells.length * 20;
+    anyExploded = true;
+  }
+
+  if (anyExploded) {
+    applyGravity();
+    clearLines(); // des lignes peuvent se former après la chute
+    updateUI();
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -765,9 +893,9 @@ function hideOverlay() {
 }
 
 // ══════════════════════════════════════════════
-//  Dessin
+//  Dessin d'un bloc
 // ══════════════════════════════════════════════
-function drawBlock(c2d, x, y, color, bs, shiny) {
+function drawBlock(c2d, x, y, color, bs, shiny, placedAt) {
   c2d.fillStyle = color;
   c2d.fillRect(x * bs + 1, y * bs + 1, bs - 2, bs - 2);
   const hl = Math.max(2, Math.floor(bs * 0.18));
@@ -777,18 +905,44 @@ function drawBlock(c2d, x, y, color, bs, shiny) {
   c2d.fillStyle = 'rgba(0,0,0,0.4)';
   c2d.fillRect(x * bs + bs - hl - 1, y * bs + 1, hl, bs - 2);
   c2d.fillRect(x * bs + 1, y * bs + bs - hl - 1, bs - 2, hl);
+
   if (shiny) {
-    const pulse = 0.55 + 0.45 * Math.sin(performance.now() / 250 * Math.PI * 2);
+    let progress = 0;
+    let pulseFreq = 1;
+
+    if (placedAt) {
+      // Mèche qui s'accélère : 0→5s, fréquence x1→x10
+      progress  = Math.min(1, (Date.now() - placedAt) / GRENADE_FUSE);
+      pulseFreq = 1 + 9 * progress;
+    }
+
+    const pulse = 0.55 + 0.45 * Math.sin(performance.now() / 250 * pulseFreq * Math.PI * 2);
+
+    // Couleur : or → orange → rouge selon la progression de la mèche
+    const gv  = Math.round(240 - 210 * progress);  // 240 → 30
+    const bv  = Math.round(60  -  60 * progress);  // 60  → 0
+    const glowColor = `rgba(255,${gv},${bv},0.9)`;
+    const lineColor = `rgba(255,${Math.min(255, gv + 30)},${bv + 20},${pulse})`;
+
     c2d.save();
-    c2d.shadowColor = 'rgba(255,240,80,0.95)';
-    c2d.shadowBlur  = bs * 0.55;
-    c2d.strokeStyle = `rgba(255,245,120,${pulse})`;
-    c2d.lineWidth   = Math.max(1.5, bs * 0.09);
+    c2d.shadowColor = glowColor;
+    c2d.shadowBlur  = bs * (0.55 + progress * 0.9); // halo grossit
+    c2d.strokeStyle = lineColor;
+    c2d.lineWidth   = Math.max(1.5, bs * (0.09 + progress * 0.12));
     c2d.strokeRect(x * bs + 1.5, y * bs + 1.5, bs - 3, bs - 3);
     c2d.restore();
+
+    // Dernière seconde : clignotement du remplissage
+    if (progress > 0.8 && pulse > 0.9) {
+      c2d.fillStyle = `rgba(255,80,0,${(progress - 0.8) * 0.35})`;
+      c2d.fillRect(x * bs + 2, y * bs + 2, bs - 4, bs - 4);
+    }
   }
 }
 
+// ══════════════════════════════════════════════
+//  Dessin du plateau
+// ══════════════════════════════════════════════
 function drawBoard() {
   ctx.fillStyle = '#000014';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -798,7 +952,9 @@ function drawBoard() {
       ctx.strokeRect(c * BS, r * BS, BS, BS);
 
   board.forEach((row, r) =>
-    row.forEach((cell, c) => { if (cell) drawBlock(ctx, c, r, cell.color, BS, cell.shiny); })
+    row.forEach((cell, c) => {
+      if (cell) drawBlock(ctx, c, r, cell.color, BS, cell.shiny, cell.placedAt);
+    })
   );
 
   if (current && !over) {
@@ -814,10 +970,13 @@ function drawBoard() {
     }
     current.shape.forEach((row, r) =>
       row.forEach((cell, c) => {
-        if (cell) drawBlock(ctx, current.x + c, current.y + r, current.color, BS, current.shiny);
+        if (cell) drawBlock(ctx, current.x + c, current.y + r, current.color, BS, current.shiny, null);
       })
     );
   }
+
+  // Particules par-dessus tout
+  drawParticles();
 
   if (paused && !over) {
     ctx.fillStyle = 'rgba(0,0,15,0.65)';
@@ -839,7 +998,7 @@ function drawNext() {
   const oy = Math.floor((4 - s.length) / 2);
   s.forEach((row, r) =>
     row.forEach((cell, c) => {
-      if (cell) drawBlock(nextCtx, c + ox, r + oy, nextPiece.color, NB, nextPiece.shiny);
+      if (cell) drawBlock(nextCtx, c + ox, r + oy, nextPiece.color, NB, nextPiece.shiny, null);
     })
   );
 }
@@ -848,9 +1007,10 @@ function drawNext() {
 //  Boucle de jeu
 // ══════════════════════════════════════════════
 function loop(ts) {
+  const dt = lastTs ? ts - lastTs : 16;
+  lastTs = ts;
+
   if (!over) {
-    const dt = lastTs ? ts - lastTs : 0;
-    lastTs = ts;
     if (!paused && current) {
       const spd = fastDrop ? Math.min(40, dropSpeed * 0.05) : dropSpeed;
       dropAcc += dt;
@@ -860,6 +1020,11 @@ function loop(ts) {
         else lock();
       }
     }
+
+    // Vérifie les grenades (même en pause, les particules continuent)
+    if (!paused) checkShinyExplosions();
+
+    updateParticles(dt);
     drawBoard();
     drawNext();
   }
@@ -926,7 +1091,6 @@ document.addEventListener('keyup', e => {
   delete held[e.code];
   if (e.key === 'ArrowDown') fastDrop = false;
 });
-// Filet de sécurité : si le doigt/la souris est relâché hors du bouton DOWN
 document.addEventListener('mouseup',    () => { fastDrop = false; });
 document.addEventListener('touchend',   () => { fastDrop = false; });
 document.addEventListener('touchcancel',() => { fastDrop = false; });
@@ -974,7 +1138,6 @@ const startBtn = document.getElementById('start-btn');
 startBtn.addEventListener('click', startGame);
 startBtn.addEventListener('touchstart', e => { e.preventDefault(); startGame(); }, { passive: false });
 
-// Init canvas pour le prérendu (pas de boucle de jeu)
 setupCanvas();
 
 // ── Service Worker (PWA installable) ──
