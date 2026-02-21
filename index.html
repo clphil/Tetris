@@ -44,10 +44,20 @@
     #start-screen.hidden { display: none; }
 
     #start-title {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1;
+      gap: 0;
+      margin: 0;
+    }
+    #title-tetris {
+      display: block;
       font-size: clamp(3.5rem, 20vw, 8rem);
       font-weight: 900;
       letter-spacing: clamp(6px, 4vw, 16px);
       text-transform: uppercase;
+      font-family: 'Arial Black', Arial, sans-serif;
       background: linear-gradient(90deg,
         #ff0000 0%, #ff6600 16%, #ffff00 32%,
         #00ff00 48%, #00aaff 64%, #aa00ff 80%, #ff00aa 100%);
@@ -55,6 +65,45 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
       animation: titlePulse 2.5s ease-in-out infinite;
+    }
+    #title-gravity {
+      display: flex;
+      gap: clamp(1px, 0.8vw, 5px);
+      font-size: clamp(1.1rem, 6.5vw, 2.6rem);
+      font-weight: 900;
+      font-family: 'Arial Black', Arial, sans-serif;
+      line-height: 1;
+      margin-top: clamp(2px, 0.5vh, 6px);
+    }
+    .grav-l {
+      display: inline-block;
+      color: #00e8ff;
+      transform-origin: top center;
+      animation: gravDrop 2s ease-in-out infinite;
+      animation-delay: calc(var(--i) * 110ms);
+      text-shadow:
+        0 2px 0 rgba(0,180,230,0.8),
+        0 5px 0 rgba(0,100,190,0.55),
+        0 9px 0 rgba(0,50,150,0.35),
+        0 13px 6px rgba(0,0,80,0.2);
+    }
+    @keyframes gravDrop {
+      0%, 100% {
+        transform: scaleY(1) translateY(0);
+        text-shadow:
+          0 2px 0 rgba(0,180,230,0.8),
+          0 5px 0 rgba(0,100,190,0.55),
+          0 9px 0 rgba(0,50,150,0.35),
+          0 13px 6px rgba(0,0,80,0.2);
+      }
+      45%, 55% {
+        transform: scaleY(1.28) translateY(5px);
+        text-shadow:
+          0 3px 0 rgba(0,230,255,0.95),
+          0 8px 0 rgba(0,150,220,0.7),
+          0 14px 0 rgba(0,80,180,0.45),
+          0 20px 8px rgba(0,0,100,0.18);
+      }
     }
     @keyframes titlePulse {
       0%, 100% { filter: brightness(1); }
@@ -563,7 +612,12 @@
 
 <!-- ══ PAGE D'ACCUEIL ══ -->
 <div id="start-screen">
-  <h1 id="start-title">TETRIS</h1>
+  <h1 id="start-title">
+    <span id="title-tetris">TETRIS</span>
+    <span id="title-gravity">
+      <span class="grav-l" style="--i:0">G</span><span class="grav-l" style="--i:1">R</span><span class="grav-l" style="--i:2">A</span><span class="grav-l" style="--i:3">V</span><span class="grav-l" style="--i:4">I</span><span class="grav-l" style="--i:5">T</span><span class="grav-l" style="--i:6">Y</span>
+    </span>
+  </h1>
   <div id="start-by">designed by Phil C.</div>
 
   <!-- ═══ TUTORIEL ═══ -->
@@ -626,7 +680,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v21022026.1149</div>
+  <div id="version-label">v21022026.1203</div>
 </div>
 
 <!-- ══ JEU ══ -->
