@@ -36,8 +36,10 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: clamp(20px, 5vh, 40px);
+      gap: clamp(12px, 3vh, 28px);
       z-index: 500;
+      overflow-y: auto;
+      padding: clamp(16px, 4vh, 36px) 0;
     }
     #start-screen.hidden { display: none; }
 
@@ -88,6 +90,59 @@
       0%, 100% { box-shadow: 0 0 10px #00c8ff44; }
       50%       { box-shadow: 0 0 30px #00c8ffbb, 0 0 60px #00c8ff33; }
     }
+
+    /* ═══ TUTORIEL ACCUEIL ═══ */
+    #start-tuto {
+      width: min(88vw, 360px);
+      max-height: 38vh;
+      overflow-y: auto;
+      background: rgba(6, 6, 26, 0.92);
+      border: 1px solid rgba(0, 200, 255, 0.18);
+      border-radius: 12px;
+      padding: clamp(10px, 2.2vh, 16px) clamp(12px, 3.5vw, 20px);
+      font-family: Arial, sans-serif;
+      font-size: clamp(0.6rem, 1.9vw, 0.76rem);
+      line-height: 1.55;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,200,255,0.22) transparent;
+    }
+    .tuto-section { margin-bottom: clamp(8px, 2vh, 13px); }
+    .tuto-section:last-child { margin-bottom: 0; }
+    .tuto-h {
+      color: #00c8ff;
+      font-weight: 900;
+      font-size: clamp(0.62rem, 1.9vw, 0.78rem);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      padding-bottom: 3px;
+      border-bottom: 1px solid rgba(0,200,255,0.15);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .tuto-grid {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 2px 10px;
+    }
+    .tuto-k { color: #ffdd44; font-weight: 700; white-space: nowrap; }
+    .tuto-v { color: rgba(188,193,224,0.85); }
+    .tuto-p { color: rgba(188,193,224,0.85); margin: 0; }
+    .tbadge {
+      display: inline-block;
+      padding: 0px 5px;
+      border-radius: 3px;
+      font-size: 0.82em;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .tbadge-o { background: rgba(255,120,0,0.18); color: #ff8833; border: 1px solid rgba(255,120,0,0.32); }
+    .tbadge-p { background: rgba(160,0,255,0.18); color: #bb55ff; border: 1px solid rgba(160,0,255,0.32); }
+    .tbadge-b { background: rgba(0,200,255,0.11); color: #00c8ff; border: 1px solid rgba(0,200,255,0.28); }
 
     /* Version — centré en bas de l'écran d'accueil */
     #version-label {
@@ -510,8 +565,74 @@
 <div id="start-screen">
   <h1 id="start-title">TETRIS</h1>
   <div id="start-by">designed by Phil C.</div>
+
+  <!-- ═══ TUTORIEL ═══ -->
+  <div id="start-tuto">
+
+    <!-- CONTRÔLES -->
+    <div class="tuto-section">
+      <div class="tuto-h">&#9654; Contr&ocirc;les</div>
+      <div class="tuto-grid">
+        <span class="tuto-k">&#9650;</span>
+        <span class="tuto-v">Faire pivoter la pi&egrave;ce</span>
+        <span class="tuto-k">&#9664; &#9654;</span>
+        <span class="tuto-v">D&eacute;placer &agrave; gauche / droite</span>
+        <span class="tuto-k">&#9660;</span>
+        <span class="tuto-v">Chute rapide</span>
+        <span class="tuto-k">TOUR</span>
+        <span class="tuto-v">Rotation assist&eacute;e (wall&nbsp;kick)</span>
+        <span class="tuto-k">PAUSE</span>
+        <span class="tuto-v">Mettre le jeu en pause</span>
+      </div>
+    </div>
+
+    <!-- SHINY / GRENADE -->
+    <div class="tuto-section">
+      <div class="tuto-h">
+        &#10022; Pi&egrave;ce Shiny
+        <span class="tbadge tbadge-o">GRENADE</span>
+      </div>
+      <p class="tuto-p">
+        1 pi&egrave;ce brillante par sac de 7. Une fois pos&eacute;e, elle
+        <strong style="color:#ff8833">clignote et vibre</strong> comme une mèche.
+        Apr&egrave;s <strong style="color:#ff8833">5&nbsp;secondes</strong> elle
+        <strong style="color:#ff8833">explose</strong> et d&eacute;truit les blocs
+        dans son rayon. Planifiez l'explosion !
+      </p>
+    </div>
+
+    <!-- FLIP -->
+    <div class="tuto-section">
+      <div class="tuto-h">
+        &#8645; Flip
+        <span class="tbadge tbadge-p">TOUS LES 10 LIGNES</span>
+      </div>
+      <p class="tuto-p">
+        Retourne le plateau en <strong style="color:#bb55ff">miroir vertical</strong>.
+        Les blocs flottants tombent case par case avec la physique.
+        Les lignes compl&egrave;tes flashent et disparaissent automatiquement.
+      </p>
+    </div>
+
+    <!-- AUTRES FEATURES -->
+    <div class="tuto-section">
+      <div class="tuto-h">&#9889; Autres features</div>
+      <div class="tuto-grid">
+        <span class="tbadge tbadge-b" style="margin:2px 0">Ghost</span>
+        <span class="tuto-v">Aper&ccedil;u transparent de l'atterrissage</span>
+        <span class="tbadge tbadge-b" style="margin:2px 0">Niveaux</span>
+        <span class="tuto-v">Vitesse &#8593; tous les 10 lignes</span>
+        <span class="tbadge tbadge-b" style="margin:2px 0">Score</span>
+        <span class="tuto-v">Bonus x1&nbsp;/&nbsp;x4&nbsp;/&nbsp;x9&nbsp;/&nbsp;x16 selon les lignes</span>
+        <span class="tbadge tbadge-b" style="margin:2px 0">Kick</span>
+        <span class="tuto-v">Rotation intelligente pr&egrave;s des bords</span>
+      </div>
+    </div>
+
+  </div><!-- /start-tuto -->
+
   <button id="start-btn">START</button>
-  <div id="version-label">v21022026.1129</div>
+  <div id="version-label">v21022026.1144</div>
 </div>
 
 <!-- ══ JEU ══ -->
