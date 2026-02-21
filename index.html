@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TETRIS</title>
+
+  <!-- ── PWA ── -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#080820">
+  <!-- iOS : plein écran sans chrome Safari -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="TETRIS">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #080820;
+      font-family: 'Arial Black', Arial, sans-serif;
+      color: #fff;
+      touch-action: none;
+    }
+
+    /* ══════════════════════════════════════
+       START SCREEN
+    ══════════════════════════════════════ */
+    #start-screen {
+      position: fixed;
+      inset: 0;
+      background: #080820;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(12px, 3vh, 28px);
+      z-index: 500;
+      overflow-y: auto;
+      padding: clamp(16px, 4vh, 36px) 0;
+    }
+    #start-screen.hidden { display: none; }
+
+    #start-title {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1;
+      gap: 0;
+      margin: 0;
+    }
+    #title-tetris {
+      display: block;
+      font-size: clamp(3.5rem, 20vw, 8rem);
+      font-weight: 900;
+      letter-spacing: clamp(6px, 4vw, 16px);
+      text-transform: uppercase;
+      font-family: 'Arial Black', Arial, sans-serif;
+      background: linear-gradient(90deg,
+        #ff0000 0%, #ff6600 16%, #ffff00 32%,
+        #00ff00 48%, #00aaff 64%, #aa00ff 80%, #ff00aa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: titlePulse 2.5s ease-in-out infinite;
+    }
+    #title-gravity {
+      display: flex;
+      gap: clamp(1px, 0.8vw, 5px);
+      font-size: clamp(1.1rem, 6.5vw, 2.6rem);
+      font-weight: 900;
+      font-family: 'Arial Black', Arial, sans-serif;
+      line-height: 1;
+      margin-top: clamp(2px, 0.5vh, 6px);
+    }
+    .grav-l {
+      display: inline-block;
+      color: #00e8ff;
+      transform-origin: top center;
+      animation: gravDrop 2s ease-in-out infinite;
+      animation-delay: calc(var(--i) * 110ms);
+      text-shadow:
+        0 2px 0 rgba(0,180,230,0.8),
+        0 5px 0 rgba(0,100,190,0.55),
+        0 9px 0 rgba(0,50,150,0.35),
+        0 13px 6px rgba(0,0,80,0.2);
+    }
+    @keyframes gravDrop {
+      0%, 100% {
+        transform: scaleY(1) translateY(0);
+        text-shadow:
+          0 2px 0 rgba(0,180,230,0.8),
+          0 5px 0 rgba(0,100,190,0.55),
+          0 9px 0 rgba(0,50,150,0.35),
+          0 13px 6px rgba(0,0,80,0.2);
+      }
+      45%, 55% {
+        transform: scaleY(1.28) translateY(5px);
+        text-shadow:
+          0 3px 0 rgba(0,230,255,0.95),
+          0 8px 0 rgba(0,150,220,0.7),
+          0 14px 0 rgba(0,80,180,0.45),
+          0 20px 8px rgba(0,0,100,0.18);
+      }
+    }
+    @keyframes titlePulse {
+      0%, 100% { filter: brightness(1); }
+      50%       { filter: brightness(1.35) drop-shadow(0 0 18px rgba(0,200,255,0.55)); }
+    }
+
+    #start-by {
+      font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+      color: rgba(160, 160, 220, 0.65);
+      letter-spacing: clamp(2px, 1.5vw, 5px);
+      font-style: italic;
+      font-family: Arial, sans-serif;
+      font-weight: 400;
+    }
+
+    #start-btn {
+      margin-top: clamp(8px, 2vh, 20px);
+      background: #0a0a30;
+      border: 3px solid #00c8ff;
+      color: #00c8ff;
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: clamp(1.1rem, 6vw, 1.8rem);
+      font-weight: 900;
+      letter-spacing: clamp(4px, 2vw, 8px);
+      padding: clamp(12px, 3vh, 22px) clamp(36px, 12vw, 72px);
+      border-radius: 14px;
+      cursor: pointer;
+      animation: btnPulse 1.8s ease-in-out infinite;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #start-btn:active { background: #003355; }
+    @keyframes btnPulse {
+      0%, 100% { box-shadow: 0 0 10px #00c8ff44; }
+      50%       { box-shadow: 0 0 30px #00c8ffbb, 0 0 60px #00c8ff33; }
+    }
+
+    /* ═══ TUTORIEL ACCUEIL ═══ */
+    #start-tuto {
+      width: min(88vw, 360px);
+      max-height: 38vh;
+      overflow-y: auto;
+      background: rgba(6, 6, 26, 0.92);
+      border: 1px solid rgba(0, 200, 255, 0.18);
+      border-radius: 12px;
+      padding: clamp(10px, 2.2vh, 16px) clamp(12px, 3.5vw, 20px);
+      font-family: Arial, sans-serif;
+      font-size: clamp(0.6rem, 1.9vw, 0.76rem);
+      line-height: 1.55;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,200,255,0.22) transparent;
+    }
+    .tuto-section { margin-bottom: clamp(8px, 2vh, 13px); }
+    .tuto-section:last-child { margin-bottom: 0; }
+    .tuto-h {
+      color: #00c8ff;
+      font-weight: 900;
+      font-size: clamp(0.62rem, 1.9vw, 0.78rem);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      padding-bottom: 3px;
+      border-bottom: 1px solid rgba(0,200,255,0.15);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .tuto-grid {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 2px 10px;
+    }
+    .tuto-k { color: #ffdd44; font-weight: 700; white-space: nowrap; }
+    .tuto-v { color: rgba(188,193,224,0.85); }
+    .tuto-p { color: rgba(188,193,224,0.85); margin: 0; }
+    .tbadge {
+      display: inline-block;
+      padding: 0px 5px;
+      border-radius: 3px;
+      font-size: 0.82em;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .tbadge-o { background: rgba(255,120,0,0.18); color: #ff8833; border: 1px solid rgba(255,120,0,0.32); }
+    .tbadge-p { background: rgba(160,0,255,0.18); color: #bb55ff; border: 1px solid rgba(160,0,255,0.32); }
+    .tbadge-b { background: rgba(0,200,255,0.11); color: #00c8ff; border: 1px solid rgba(0,200,255,0.28); }
+
+    /* Version — centré en bas de l'écran d'accueil */
+    #version-label {
+      position: absolute;
+      bottom: 14px;
+      left: 0; right: 0;
+      text-align: center;
+      font-size: clamp(0.55rem, 2vw, 0.75rem);
+      color: rgba(130, 130, 200, 0.75);
+      font-family: Arial, sans-serif;
+      font-weight: 400;
+      letter-spacing: 2px;
+      pointer-events: none;
+    }
+
+    /* ══════════════════════════════════════
+       LAYOUT PAYSAGE (défaut)
+       left-panel | center-panel | right-panel
+    ══════════════════════════════════════ */
+    #app {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    /* ── Panneau gauche ── */
+    #left-panel {
+      flex: 0 0 27%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 4px 18px;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    /* ── Canvas central ── */
+    #center-panel {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #board-wrap {
+      border: 3px solid #00c8ff;
+      box-shadow: 0 0 20px #00c8ff55, 0 0 40px #00c8ff22, inset 0 0 8px #00001a;
+      line-height: 0;
+      flex-shrink: 0;
+      transform-origin: center center;
+    }
+    #board { display: block; }
+
+    /* ── Panneau droit ── */
+    #right-panel {
+      flex: 0 0 27%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 4px 18px;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    /* ══════════════════════════════════════
+       TITRE TETRIS (paysage, panneau gauche)
+    ══════════════════════════════════════ */
+    #title {
+      font-size: clamp(1rem, 4vw, 1.8rem);
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1;
+      gap: 1px;
+    }
+    #title-main {
+      background: linear-gradient(90deg,
+        #ff0000 0%, #ff6600 16%, #ffff00 32%,
+        #00ff00 48%, #00aaff 64%, #aa00ff 80%, #ff00aa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    #ingame-gravity {
+      display: flex;
+      gap: 0px;
+      font-size: clamp(0.38rem, 1.6vw, 0.7rem);
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-weight: 900;
+      letter-spacing: clamp(1px, 0.4vw, 3px);
+      line-height: 1;
+    }
+    .igrav-l {
+      display: inline-block;
+      color: #00e8ff;
+      transform-origin: top center;
+      text-shadow:
+        0 1px 0 rgba(0,160,220,0.75),
+        0 3px 0 rgba(0,80,170,0.45),
+        0 5px 3px rgba(0,0,70,0.2);
+    }
+    /* Animation uniquement pendant le flip */
+    #ingame-gravity.flipping .igrav-l {
+      animation: gravDrop 1.6s ease-in-out infinite;
+      animation-delay: calc(var(--i) * 100ms);
+    }
+
+    /* ══════════════════════════════════════
+       D-PAD
+    ══════════════════════════════════════ */
+    #dpad {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .drow { display: flex; gap: 4px; align-items: center; }
+
+    .dpad-spacer {
+      width: clamp(34px, 8.5vw, 52px);
+      height: clamp(34px, 8.5vw, 52px);
+    }
+
+    .ctrl-btn {
+      width: clamp(34px, 8.5vw, 52px);
+      height: clamp(34px, 8.5vw, 52px);
+      background: #0e0e38;
+      border: 2px solid #00c8ff;
+      color: #00c8ff;
+      font-size: clamp(0.9rem, 2.6vw, 1.3rem);
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      user-select: none; -webkit-user-select: none;
+      box-shadow: 0 0 6px #00c8ff55;
+      transition: background 0.08s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .ctrl-btn:active { background: #00395a; box-shadow: 0 0 12px #00c8ffaa; }
+
+    #chute-label {
+      font-size: clamp(0.4rem, 1.3vw, 0.58rem);
+      color: #00c8ff;
+      letter-spacing: 2px;
+      margin-top: 2px;
+      text-align: center;
+    }
+
+    /* ══════════════════════════════════════
+       BARRE DE VITESSE
+    ══════════════════════════════════════ */
+    #speed-track {
+      display: none;
+    }
+
+    /* ══════════════════════════════════════
+       INFO BOXES
+    ══════════════════════════════════════ */
+    .info-box {
+      border: 2px solid #00c8ff;
+      padding: 4px 8px;
+      width: 88%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #0a0a28;
+      box-shadow: 0 0 8px #00c8ff33;
+    }
+    .box-label {
+      font-size: clamp(0.4rem, 1.4vw, 0.62rem);
+      color: #00c8ff;
+      letter-spacing: 3px;
+      margin-bottom: 2px;
+    }
+    #score-val {
+      font-size: clamp(1rem, 3.2vw, 1.55rem);
+      font-weight: 900;
+      text-shadow: 0 0 8px #00c8ff88;
+    }
+    #lines-val {
+      font-size: clamp(0.4rem, 1.3vw, 0.58rem);
+      color: #8888cc;
+      margin-top: 1px;
+    }
+    #level-val {
+      font-size: clamp(0.9rem, 2.6vw, 1.25rem);
+      font-weight: 900;
+    }
+    #next-canvas { display: block; }
+
+    /* ══════════════════════════════════════
+       BOUTONS TOUR & PAUSE
+    ══════════════════════════════════════ */
+    #tour-btn {
+      width: clamp(44px, 11vw, 64px);
+      height: clamp(44px, 11vw, 64px);
+      border-radius: 50%;
+      background: #0e0e38;
+      border: 3px solid #00c8ff;
+      color: #00c8ff;
+      font-size: clamp(0.4rem, 1.3vw, 0.58rem);
+      font-weight: 900;
+      letter-spacing: 1px;
+      cursor: pointer;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 2px;
+      box-shadow: 0 0 12px #00c8ff55;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #tour-icon { font-size: clamp(1rem, 2.8vw, 1.35rem); line-height: 1; }
+    #tour-btn:active { background: #00395a; }
+
+    #pause-btn {
+      background: #0e0e38;
+      border: 2px solid #00c8ff;
+      color: #00c8ff;
+      padding: clamp(4px, 1.2vw, 8px) clamp(8px, 2.5vw, 20px);
+      font-size: clamp(0.5rem, 1.6vw, 0.75rem);
+      letter-spacing: 3px;
+      font-weight: 900;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 88%;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #pause-btn:active { background: #003355; }
+
+    /* ══════════════════════════════════════
+       BOUTON FLIP (power-up tous les 10 lignes)
+    ══════════════════════════════════════ */
+    #flip-btn {
+      background: #1a0800;
+      border: 2px solid #ffcc00;
+      color: #ffcc00;
+      padding: clamp(4px, 1.2vw, 8px) clamp(8px, 2.5vw, 20px);
+      font-size: clamp(0.5rem, 1.6vw, 0.75rem);
+      letter-spacing: 3px;
+      font-weight: 900;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 88%;
+      animation: flipPulse 0.85s ease-in-out infinite;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #flip-btn.hidden { display: none; }
+    #flip-btn:active { background: #4a2800; }
+    @keyframes flipPulse {
+      0%, 100% { box-shadow: 0 0 8px #ffcc0055; }
+      50%       { box-shadow: 0 0 22px #ffcc00cc, 0 0 44px #ffcc0044; }
+    }
+
+    /* ══════════════════════════════════════
+       OVERLAY (pause / game over)
+    ══════════════════════════════════════ */
+    #overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,15,0.88);
+      display: none;
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 200;
+      gap: 14px;
+    }
+    #overlay.show { display: flex; }
+    #ov-title {
+      font-size: clamp(1.4rem, 5vw, 2.2rem);
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: #ff4444;
+      text-shadow: 0 0 20px #ff0000;
+    }
+    #ov-title.pause-title { color: #00c8ff; text-shadow: 0 0 20px #00c8ff; }
+    #ov-score { font-size: clamp(0.8rem, 2.5vw, 1.1rem); color: #ccc; letter-spacing: 2px; }
+    #ov-btn {
+      background: #0e0e38;
+      border: 2px solid #00c8ff;
+      color: #00c8ff;
+      padding: 10px 30px;
+      font-size: clamp(0.7rem, 2.2vw, 0.95rem);
+      font-weight: 900;
+      letter-spacing: 3px;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 12px #00c8ff55;
+    }
+    #ov-btn:active { background: #003355; }
+
+    /* ══════════════════════════════════════
+       SIGNATURE — paysage (fixed, discret)
+    ══════════════════════════════════════ */
+    #signature {
+      position: fixed;
+      bottom: 2px; left: 0; right: 0;
+      text-align: center;
+      font-size: 0.46rem;
+      color: rgba(80, 80, 150, 0.55);
+      letter-spacing: 2px;
+      pointer-events: none;
+      z-index: 5;
+      font-style: italic;
+      font-family: Arial, sans-serif;
+    }
+
+    /* ══════════════════════════════════════
+       PORTRAIT
+    ══════════════════════════════════════ */
+    @media (orientation: portrait) {
+
+      #app {
+        display: grid;
+        grid-template-areas:
+          "center center"
+          "left   right"
+          "sig    sig";
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 57vh calc(43vh - 14px) 14px;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+        align-items: stretch;
+      }
+
+      #center-panel {
+        grid-area: center;
+        width: 100%;
+        height: 100%;
+        padding: 4px 0;
+        flex: unset;
+        min-width: unset;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      #left-panel {
+        grid-area: left;
+        flex: unset;
+        min-width: unset;
+        width: 100%;
+        height: 100%;
+        padding: 5px 5px 3px;
+        justify-content: space-evenly;
+        overflow: hidden;
+        border-top: 1px solid #00c8ff44;
+        border-right: 1px solid #00c8ff22;
+      }
+
+      #right-panel {
+        grid-area: right;
+        flex: unset;
+        min-width: unset;
+        width: 100%;
+        height: 100%;
+        padding: 5px 5px 3px;
+        justify-content: space-evenly;
+        overflow: hidden;
+        border-top: 1px solid #00c8ff44;
+      }
+
+      #signature {
+        grid-area: sig;
+        position: static;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.46rem;
+        color: rgba(80, 80, 150, 0.55);
+        letter-spacing: 2px;
+        font-style: italic;
+        font-family: Arial, sans-serif;
+        pointer-events: none;
+      }
+
+      #title { display: none; }
+
+      .ctrl-btn {
+        width: clamp(38px, 11vw, 58px);
+        height: clamp(38px, 11vw, 58px);
+        font-size: clamp(1rem, 3.5vw, 1.4rem);
+      }
+      .dpad-spacer {
+        width: clamp(38px, 11vw, 58px);
+        height: clamp(38px, 11vw, 58px);
+      }
+      #chute-label { font-size: clamp(0.4rem, 2.2vw, 0.58rem); }
+
+
+      .info-box  { width: 90%; padding: 2px 5px; }
+      .box-label { font-size: clamp(0.4rem, 2.2vw, 0.6rem); letter-spacing: 2px; margin-bottom: 1px; }
+
+      #score-val { font-size: clamp(1rem, 5.5vw, 1.6rem); }
+      #lines-val { font-size: clamp(0.38rem, 2vw, 0.54rem); margin-top: 1px; }
+      #level-val { font-size: clamp(0.9rem, 5vw, 1.4rem); }
+
+      #tour-btn   { width: clamp(40px, 12vw, 56px); height: clamp(40px, 12vw, 56px); }
+      #tour-icon  { font-size: clamp(0.9rem, 3.8vw, 1.2rem); }
+
+      #pause-btn {
+        width: 90%;
+        padding: 4px 6px;
+        font-size: clamp(0.48rem, 2.8vw, 0.72rem);
+      }
+      #flip-btn {
+        width: 90%;
+        padding: 4px 6px;
+        font-size: clamp(0.48rem, 2.8vw, 0.72rem);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ PAGE D'ACCUEIL ══ -->
+<div id="start-screen">
+  <h1 id="start-title">
+    <span id="title-tetris">TETRIS</span>
+    <span id="title-gravity">
+      <span class="grav-l" style="--i:0">G</span><span class="grav-l" style="--i:1">R</span><span class="grav-l" style="--i:2">A</span><span class="grav-l" style="--i:3">V</span><span class="grav-l" style="--i:4">I</span><span class="grav-l" style="--i:5">T</span><span class="grav-l" style="--i:6">Y</span>
+    </span>
+  </h1>
+  <div id="start-by">designed by Phil C.</div>
+
+  <!-- ═══ TUTORIEL ═══ -->
+  <div id="start-tuto">
+
+    <!-- CONTRÔLES -->
+    <div class="tuto-section">
+      <div class="tuto-h">&#9654; Contr&ocirc;les</div>
+      <div class="tuto-grid">
+        <span class="tuto-k">&#9650;</span>
+        <span class="tuto-v">Pivote</span>
+        <span class="tuto-k">&#9664; &#9654;</span>
+        <span class="tuto-v">Bouge</span>
+        <span class="tuto-k">&#9660;</span>
+        <span class="tuto-v">Chute rapide</span>
+        <span class="tuto-k">TOUR</span>
+        <span class="tuto-v">Rotation maligne</span>
+        <span class="tuto-k">PAUSE</span>
+        <span class="tuto-v">Souffle un peu</span>
+      </div>
+    </div>
+
+    <!-- SHINY / GRENADE -->
+    <div class="tuto-section">
+      <div class="tuto-h">
+        &#10022; Pi&egrave;ce Shiny
+        <span class="tbadge tbadge-o">GRENADE</span>
+      </div>
+      <p class="tuto-p">
+        1 par sac de 7. Elle clignote, elle s'&eacute;nerve&hellip;
+        et apr&egrave;s <strong style="color:#ff8833">5s&nbsp;&#128165;</strong> tout saute !
+      </p>
+    </div>
+
+    <!-- FLIP -->
+    <div class="tuto-section">
+      <div class="tuto-h">
+        &#8645; Flip
+        <span class="tbadge tbadge-p">TOUS LES 10 LIGNES</span>
+      </div>
+      <p class="tuto-p">
+        Le plateau se retourne, tout tombe, les lignes pleines disparaissent.
+        Le chaos&nbsp;&#8212;&nbsp;mais le bon.
+      </p>
+    </div>
+
+    <!-- AUTRES FEATURES -->
+    <div class="tuto-section">
+      <div class="tuto-h">&#9998; Astuce</div>
+      <p class="tuto-p">
+        Pour plus de confort, <strong style="color:#00e8ff">ajoute l'app sur ton &eacute;cran d'accueil</strong>&nbsp;!<br>
+        iOS&nbsp;: partage &#8594; &laquo;&nbsp;Sur l'&eacute;cran d'accueil&nbsp;&raquo;<br>
+        Android&nbsp;: menu &#8594; &laquo;&nbsp;Ajouter &agrave; l'&eacute;cran d'accueil&nbsp;&raquo;
+      </p>
+    </div>
+
+  </div><!-- /start-tuto -->
+
+  <button id="start-btn">START</button>
+  <div id="version-label">v21022026.1627</div>
+</div>
+
+<!-- ══ JEU ══ -->
+<div id="app">
+
+  <div id="left-panel">
+    <h1 id="title">
+      <span id="title-main">TETRIS</span>
+      <span id="ingame-gravity"><span class="igrav-l" style="--i:0">G</span><span class="igrav-l" style="--i:1">R</span><span class="igrav-l" style="--i:2">A</span><span class="igrav-l" style="--i:3">V</span><span class="igrav-l" style="--i:4">I</span><span class="igrav-l" style="--i:5">T</span><span class="igrav-l" style="--i:6">Y</span></span>
+    </h1>
+    <div id="dpad">
+      <div class="drow">
+        <button class="ctrl-btn" id="btn-up"    aria-label="Rotation">&#9650;</button>
+      </div>
+      <div class="drow">
+        <button class="ctrl-btn" id="btn-left"  aria-label="Gauche">&#9664;</button>
+        <div class="dpad-spacer"></div>
+        <button class="ctrl-btn" id="btn-right" aria-label="Droite">&#9654;</button>
+      </div>
+      <div class="drow">
+        <button class="ctrl-btn" id="btn-down"  aria-label="Chute rapide">&#9660;</button>
+      </div>
+      <div id="chute-label">CHUTE RAPIDE</div>
+    </div>
+  </div>
+
+  <div id="center-panel">
+    <div id="board-wrap">
+      <canvas id="board"></canvas>
+    </div>
+  </div>
+
+  <div id="right-panel">
+    <div class="info-box">
+      <div class="box-label">SCORE</div>
+      <div id="score-val">0</div>
+      <div id="lines-val">LIGNES : 0</div>
+    </div>
+    <div class="info-box">
+      <div class="box-label">NEXT</div>
+      <canvas id="next-canvas"></canvas>
+    </div>
+    <button id="tour-btn" aria-label="Rotation">
+      <span id="tour-icon">&#8635;</span>
+      <span>TOUR</span>
+    </button>
+    <button id="pause-btn">PAUSE</button>
+    <button id="flip-btn" class="hidden">&#8645; FLIP</button>
+    <div class="info-box">
+      <div class="box-label">NIVEAU</div>
+      <div id="level-val">1</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- signature (portrait = dans la grille CSS, paysage = fixed) -->
+<div id="signature">designed by Phil C.</div>
+
+<!-- ══ OVERLAY pause / game over ══ -->
+<div id="overlay">
+  <div id="ov-title">GAME OVER</div>
+  <div id="ov-score">Score : 0</div>
+  <button id="ov-btn">REJOUER</button>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  Config
+// ══════════════════════════════════════════════
+const COLS = 10, ROWS = 20;
+
+const COLORS = {
+  I: '#00eeff', O: '#ffee00', T: '#cc00ff',
+  S: '#00ee44', Z: '#ff2222', J: '#3344ff', L: '#ff8800'
+};
+
+const SHAPES = {
+  I: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
+  O: [[1,1],[1,1]],
+  T: [[0,1,0],[1,1,1],[0,0,0]],
+  S: [[0,1,1],[1,1,0],[0,0,0]],
+  Z: [[1,1,0],[0,1,1],[0,0,0]],
+  J: [[1,0,0],[1,1,1],[0,0,0]],
+  L: [[0,0,1],[1,1,1],[0,0,0]]
+};
+
+const KICKS = [0, -1, 1, -2, 2];
+const GRENADE_FUSE = 5000; // ms avant explosion
+
+// ══════════════════════════════════════════════
+//  Canvas
+// ══════════════════════════════════════════════
+const canvas  = document.getElementById('board');
+const ctx     = canvas.getContext('2d');
+const nextCv  = document.getElementById('next-canvas');
+const nextCtx = nextCv.getContext('2d');
+
+let BS = 18;
+
+function isPortrait() { return window.innerHeight > window.innerWidth; }
+
+function calcBS() {
+  if (isPortrait()) {
+    const maxH = window.innerHeight * 0.57 - 8;
+    const maxW = window.innerWidth * 0.88;
+    return Math.max(10, Math.min(30, Math.floor(maxH / ROWS), Math.floor(maxW / COLS)));
+  }
+  const maxH = window.innerHeight * 0.96;
+  const maxW  = window.innerWidth  * 0.46;
+  return Math.max(10, Math.min(32, Math.floor(maxH / ROWS), Math.floor(maxW / COLS)));
+}
+
+function setupCanvas() {
+  BS = calcBS();
+  canvas.width  = COLS * BS;
+  canvas.height = ROWS * BS;
+  const NB = isPortrait()
+    ? Math.max(10, Math.floor(BS * 0.56))
+    : Math.max(14, Math.floor(BS * 0.84));
+  nextCv.width  = 4 * NB;
+  nextCv.height = 4 * NB;
+  nextCv._nb    = NB;
+}
+
+// ══════════════════════════════════════════════
+//  Particules
+// ══════════════════════════════════════════════
+let particles = [];
+
+function spawnExplosion(boardX, boardY, color) {
+  // Plusieurs salves depuis chaque cellule
+  const px = (boardX + 0.5) * BS;
+  const py = (boardY + 0.5) * BS;
+  const count = 14 + Math.floor(Math.random() * 8);
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (1.8 + Math.random() * 4.2) * (BS / 20);
+    const warm  = Math.random();
+    // Couleur : mélange de la couleur de la pièce + orange/blanc
+    const r2 = 255, g2 = Math.round(warm > 0.5 ? 200 + Math.random() * 55 : 60 + Math.random() * 80), b2 = Math.round(warm > 0.7 ? 100 : 10);
+    particles.push({
+      x: px + (Math.random() - 0.5) * BS,
+      y: py + (Math.random() - 0.5) * BS,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1.5,
+      color: Math.random() < 0.4 ? color : `rgb(${r2},${g2},${b2})`,
+      size: Math.max(1.5, BS * (0.12 + Math.random() * 0.22)),
+      life: 1.0,
+      decay: 0.018 + Math.random() * 0.022
+    });
+  }
+}
+
+// Explosion ligne — éclat de pixels depuis chaque cellule, intensité ∝ nb lignes
+function spawnLineExplosion(boardX, boardY, color, numLines) {
+  const px = (boardX + 0.5) * BS;
+  const py = (boardY + 0.5) * BS;
+  const speedScale = 1 + (numLines - 1) * 0.22;
+  const sizeScale  = 1 + (numLines - 1) * 0.12;
+  const decayScale = Math.max(0.5, 1 - (numLines - 1) * 0.05);
+  const count = 7 + Math.floor(Math.random() * 6);
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (1.6 + Math.random() * 3.5) * (BS / 20) * speedScale;
+    const warm  = Math.random();
+    const g2 = Math.round(warm > 0.5 ? 200 + Math.random() * 55 : 60 + Math.random() * 80);
+    const b2  = Math.round(warm > 0.7 ? 100 : 10);
+    // 60 % couleur de la pièce, 20 % blanc étincelant, 20 % orange chaud
+    const col = Math.random() < 0.6 ? color
+              : Math.random() < 0.5 ? '#ffffff'
+              : `rgb(255,${g2},${b2})`;
+    particles.push({
+      x: px + (Math.random() - 0.5) * BS * 0.8,
+      y: py + (Math.random() - 0.5) * BS * 0.8,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1.2 * speedScale,
+      color: col,
+      size: Math.max(1.5, BS * (0.10 + Math.random() * 0.18) * sizeScale),
+      life: 1.0,
+      decay: (0.014 + Math.random() * 0.018) * decayScale
+    });
+  }
+}
+
+function updateParticles(dt) {
+  const g = 0.25 * dt / 16; // gravité normalisée
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x  += p.vx * dt / 16;
+    p.y  += p.vy * dt / 16;
+    p.vy += g;
+    p.vx *= 0.985;
+    p.life -= p.decay * dt / 16;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+function drawParticles() {
+  for (const p of particles) {
+    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.fillStyle = p.color;
+    const s = Math.round(p.size);
+    ctx.fillRect(Math.round(p.x - s / 2), Math.round(p.y - s / 2), s, s);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ══════════════════════════════════════════════
+//  État du jeu
+// ══════════════════════════════════════════════
+let board, current, nextPiece;
+let score, lines, level;
+let paused, over;
+let dropSpeed, dropAcc, lastTs, rafId;
+let fastDrop = false;
+let bag = [];
+let shinyCounter = 0; // ID unique par pièce grenade
+let flipAvailable    = false;
+let flipInProgress   = false;
+let lastFlipMilestone = 0;
+let flipHighlightRows = []; // lignes à flasher pendant l'anim de suppression
+
+// ══════════════════════════════════════════════
+//  Sac de pièces — exactement 1 shiny par sac
+// ══════════════════════════════════════════════
+function fillBag() {
+  const types = Object.keys(SHAPES);
+  for (let i = types.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [types[i], types[j]] = [types[j], types[i]];
+  }
+  // Exactement 1 pièce grenade par sac de 7
+  const shinyPos = Math.floor(Math.random() * types.length);
+  bag = types.map((type, i) => ({ type, shiny: i === shinyPos }));
+}
+
+function drawFromBag() {
+  if (!bag.length) fillBag();
+  const { type, shiny } = bag.pop();
+  return {
+    type, color: COLORS[type],
+    shiny,
+    shape: SHAPES[type].map(r => [...r]),
+    x: Math.floor(COLS / 2) - Math.floor(SHAPES[type][0].length / 2),
+    y: 0
+  };
+}
+
+// ══════════════════════════════════════════════
+//  Init
+// ══════════════════════════════════════════════
+function initGame() {
+  board     = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+  score     = 0; lines = 0; level = 1;
+  dropSpeed = 850; dropAcc = 0; lastTs = 0;
+  paused    = false; over = false; fastDrop = false;
+  particles = [];
+  flipAvailable = false; flipInProgress = false; lastFlipMilestone = 0;
+  document.getElementById('flip-btn').classList.add('hidden');
+  bag = []; fillBag();
+  nextPiece = drawFromBag();
+  spawn();
+  updateUI();
+  hideOverlay();
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(loop);
+}
+
+function spawn() {
+  current = nextPiece;
+  nextPiece = drawFromBag();
+  if (!valid(current, 0, 0)) { over = true; showOverlay(false); }
+}
+
+// ══════════════════════════════════════════════
+//  Physique de base
+// ══════════════════════════════════════════════
+function valid(piece, dx, dy, shape) {
+  const s = shape || piece.shape;
+  for (let r = 0; r < s.length; r++)
+    for (let c = 0; c < s[r].length; c++)
+      if (s[r][c]) {
+        const nx = piece.x + c + dx, ny = piece.y + r + dy;
+        if (nx < 0 || nx >= COLS || ny >= ROWS) return false;
+        if (ny >= 0 && board[ny][nx]) return false;
+      }
+  return true;
+}
+
+function rot90(shape) {
+  const R = shape.length, C = shape[0].length;
+  const out = Array.from({ length: C }, () => Array(R).fill(0));
+  for (let r = 0; r < R; r++)
+    for (let c = 0; c < C; c++)
+      out[c][R - 1 - r] = shape[r][c];
+  return out;
+}
+
+function rotate() {
+  if (!current || paused || over) return;
+  const s = rot90(current.shape);
+  for (const k of KICKS) {
+    if (valid(current, k, 0, s)) { current.shape = s; current.x += k; return; }
+  }
+}
+
+function ghostDY() {
+  let dy = 0;
+  while (valid(current, 0, dy + 1)) dy++;
+  return dy;
+}
+
+// ══════════════════════════════════════════════
+//  Gravité colonne par colonne (après explosion)
+// ══════════════════════════════════════════════
+function applyGravity() {
+  for (let c = 0; c < COLS; c++) {
+    // Collecte les cellules non-nulles de bas en haut
+    const cells = [];
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (board[r][c]) cells.push(board[r][c]);
+    }
+    // Vide la colonne puis remplit depuis le bas
+    for (let r = 0; r < ROWS; r++) board[r][c] = null;
+    for (let i = 0; i < cells.length; i++) {
+      board[ROWS - 1 - i][c] = cells[i];
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+//  Effacement de lignes complètes
+// ══════════════════════════════════════════════
+function clearLines() {
+  // Repérer toutes les lignes complètes
+  const fullRows = [];
+  for (let r = 0; r < ROWS; r++) {
+    if (board[r].every(v => v !== null)) fullRows.push(r);
+  }
+  const cleared = fullRows.length;
+  if (!cleared) return 0;
+
+  // Spawn des pixels AVANT suppression (indices encore valides)
+  for (const r of fullRows) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = board[r][c];
+      if (cell) spawnLineExplosion(c, r, cell.color, cleared);
+    }
+  }
+
+  // Supprimer les lignes complètes d'un coup
+  board = board.filter((_, idx) => !fullRows.includes(idx));
+  while (board.length < ROWS) board.unshift(Array(COLS).fill(null));
+
+  score += cleared * cleared * 100;
+  lines += cleared;
+  level = Math.floor(lines / 10) + 1;
+  dropSpeed = Math.max(120, 850 - (level - 1) * 50);
+  // Débloque le bouton FLIP à chaque nouveau palier de 10 lignes
+  const milestone = Math.floor(lines / 10) * 10;
+  if (milestone > 0 && milestone > lastFlipMilestone) {
+    lastFlipMilestone = milestone;
+    flipAvailable = true;
+    document.getElementById('flip-btn').classList.remove('hidden');
+  }
+  updateUI();
+  return cleared;
+}
+
+// ══════════════════════════════════════════════
+//  Pose de pièce
+// ══════════════════════════════════════════════
+function lock() {
+  const placedAt = current.shiny ? Date.now() : null;
+  const sid      = current.shiny ? ++shinyCounter : null;
+
+  current.shape.forEach((row, r) =>
+    row.forEach((cell, c) => {
+      if (cell) {
+        const ny = current.y + r, nx = current.x + c;
+        if (ny >= 0) board[ny][nx] = {
+          color: current.color,
+          shiny: !!current.shiny,
+          placedAt,
+          sid
+        };
+      }
+    })
+  );
+
+  clearLines();
+  spawn();
+}
+
+function hardDrop() {
+  if (!current || paused || over) return;
+  current.y += ghostDY();
+  lock();
+}
+
+// ══════════════════════════════════════════════
+//  EXPLOSION — Mécanique grenade
+// ══════════════════════════════════════════════
+function checkShinyExplosions() {
+  const now = Date.now();
+
+  // Regroupe les cellules shiny prêtes à exploser par sid
+  const groups = {};
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = board[r][c];
+      if (cell && cell.shiny && cell.placedAt && now - cell.placedAt >= GRENADE_FUSE) {
+        const key = cell.sid;
+        if (!groups[key]) groups[key] = { color: cell.color, cells: [] };
+        groups[key].cells.push({ r, c });
+      }
+    }
+  }
+
+  let anyExploded = false;
+  for (const { color, cells } of Object.values(groups)) {
+    // Collecte : la pièce shiny + toutes les cellules qui la touchent
+    const toDestroy = new Set(cells.map(({ r, c }) => `${r},${c}`));
+    for (const { r, c } of cells) {
+      for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && board[nr][nc])
+          toDestroy.add(`${nr},${nc}`);
+      }
+    }
+    // Particules + suppression
+    for (const key of toDestroy) {
+      const [r, c] = key.split(',').map(Number);
+      spawnExplosion(c, r, board[r][c]?.color || color);
+      board[r][c] = null;
+    }
+    score += toDestroy.size * 20;
+    anyExploded = true;
+  }
+
+  if (anyExploded) {
+    applyGravity();
+    clearLines(); // des lignes peuvent se former après la chute
+    updateUI();
+  }
+}
+
+// ══════════════════════════════════════════════
+//  FLIP — Miroir vertical + physique animée
+// ══════════════════════════════════════════════
+function doFlipBoard() {
+  // Miroir vertical pur : ligne r ↔ ligne ROWS-1-r, colonnes inchangées
+  const nb = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      if (board[r][c]) nb[ROWS - 1 - r][c] = board[r][c];
+  board = nb;
+}
+
+// Un seul pas de gravité : chaque bloc flottant tombe d'une case
+function gravityStepOnce() {
+  let moved = false;
+  for (let r = ROWS - 2; r >= 0; r--)
+    for (let c = 0; c < COLS; c++)
+      if (board[r][c] && !board[r + 1][c]) {
+        board[r + 1][c] = board[r][c];
+        board[r][c] = null;
+        moved = true;
+      }
+  return moved;
+}
+
+function startFlip() {
+  if (flipInProgress || !flipAvailable || over) return;
+  flipAvailable  = false;
+  flipInProgress = true;
+  current = null;
+  document.getElementById('flip-btn').classList.add('hidden');
+  document.getElementById('ingame-gravity').classList.add('flipping');
+
+  const wrap = document.getElementById('board-wrap');
+  const HALF = 350; // ms par demi-animation
+
+  // Phase 1 : repli (scaleY 1 → ~0)
+  wrap.style.transition = `transform ${HALF}ms cubic-bezier(0.55,0,1,0.45)`;
+  wrap.style.transform  = 'scaleY(0.02)';
+
+  setTimeout(() => {
+    // Mi-chemin : appliquer le miroir vertical
+    doFlipBoard();
+    drawBoard();
+
+    // Phase 2 : dépli (scaleY 0 → 1)
+    wrap.style.transition = `transform ${HALF}ms cubic-bezier(0,0.55,0.45,1)`;
+    wrap.style.transform  = 'scaleY(1)';
+
+    setTimeout(() => {
+      wrap.style.transition = '';
+      wrap.style.transform  = '';
+      // Les blocs tombent maintenant, animés pas à pas
+      animateGravityThenClear();
+    }, HALF);
+  }, HALF);
+}
+
+// Fait tomber les blocs case par case puis gère les lignes complètes
+function animateGravityThenClear() {
+  const STEP_MS = 52;
+
+  function step() {
+    const moved = gravityStepOnce();
+    drawBoard();
+    if (moved) {
+      setTimeout(step, STEP_MS);
+    } else {
+      // Gravité stabilisée — chercher les lignes complètes
+      const fullRows = [];
+      for (let r = 0; r < ROWS; r++)
+        if (board[r].every(v => v !== null)) fullRows.push(r);
+
+      if (fullRows.length > 0) {
+        animateFlipLineClear(fullRows);
+      } else {
+        finalizeFlip();
+      }
+    }
+  }
+  step();
+}
+
+// Flash blanc des lignes complètes puis suppression
+function animateFlipLineClear(rows) {
+  let count = 0;
+  const FLASH_MS = 110;
+
+  function flash() {
+    flipHighlightRows = (count % 2 === 0) ? rows : [];
+    drawBoard();
+    count++;
+    if (count < 6) {
+      setTimeout(flash, FLASH_MS);
+    } else {
+      flipHighlightRows = [];
+      clearLines();
+      updateUI();
+      drawBoard();
+      finalizeFlip();
+    }
+  }
+  flash();
+}
+
+function finalizeFlip() {
+  document.getElementById('ingame-gravity').classList.remove('flipping');
+  flipInProgress = false;
+  spawn();
+  if (over) showOverlay(false);
+}
+
+// ══════════════════════════════════════════════
+//  UI
+// ══════════════════════════════════════════════
+function updateUI() {
+  document.getElementById('score-val').textContent = score;
+  document.getElementById('lines-val').textContent = `LIGNES : ${lines}`;
+  document.getElementById('level-val').textContent = level;
+}
+
+function showOverlay(isPause) {
+  const ov = document.getElementById('overlay');
+  const title = document.getElementById('ov-title');
+  if (isPause) {
+    title.textContent = 'PAUSE'; title.className = 'pause-title';
+    document.getElementById('ov-btn').textContent = 'REPRENDRE';
+  } else {
+    title.textContent = 'GAME OVER'; title.className = '';
+    document.getElementById('ov-btn').textContent = 'REJOUER';
+  }
+  document.getElementById('ov-score').textContent = `Score : ${score}`;
+  ov.classList.add('show');
+}
+
+function hideOverlay() {
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ══════════════════════════════════════════════
+//  Dessin d'un bloc
+// ══════════════════════════════════════════════
+function drawBlock(c2d, x, y, color, bs, shiny, placedAt) {
+  c2d.fillStyle = color;
+  c2d.fillRect(x * bs + 1, y * bs + 1, bs - 2, bs - 2);
+  const hl = Math.max(2, Math.floor(bs * 0.18));
+  c2d.fillStyle = 'rgba(255,255,255,0.35)';
+  c2d.fillRect(x * bs + 1, y * bs + 1, bs - 2, hl);
+  c2d.fillRect(x * bs + 1, y * bs + 1, hl, bs - 2);
+  c2d.fillStyle = 'rgba(0,0,0,0.4)';
+  c2d.fillRect(x * bs + bs - hl - 1, y * bs + 1, hl, bs - 2);
+  c2d.fillRect(x * bs + 1, y * bs + bs - hl - 1, bs - 2, hl);
+
+  if (shiny) {
+    let progress = 0;
+    let pulseFreq = 1;
+
+    if (placedAt) {
+      // Mèche qui s'accélère : 0→5s, fréquence x1→x10
+      progress  = Math.min(1, (Date.now() - placedAt) / GRENADE_FUSE);
+      pulseFreq = 1 + 9 * progress;
+    }
+
+    const pulse = 0.55 + 0.45 * Math.sin(performance.now() / 250 * pulseFreq * Math.PI * 2);
+
+    // Couleur : or → orange → rouge selon la progression de la mèche
+    const gv  = Math.round(240 - 210 * progress);  // 240 → 30
+    const bv  = Math.round(60  -  60 * progress);  // 60  → 0
+    const glowColor = `rgba(255,${gv},${bv},0.9)`;
+    const lineColor = `rgba(255,${Math.min(255, gv + 30)},${bv + 20},${pulse})`;
+
+    c2d.save();
+    c2d.shadowColor = glowColor;
+    c2d.shadowBlur  = bs * (0.55 + progress * 0.9); // halo grossit
+    c2d.strokeStyle = lineColor;
+    c2d.lineWidth   = Math.max(1.5, bs * (0.09 + progress * 0.12));
+    c2d.strokeRect(x * bs + 1.5, y * bs + 1.5, bs - 3, bs - 3);
+    c2d.restore();
+
+    // Dernière seconde : clignotement du remplissage
+    if (progress > 0.8 && pulse > 0.9) {
+      c2d.fillStyle = `rgba(255,80,0,${(progress - 0.8) * 0.35})`;
+      c2d.fillRect(x * bs + 2, y * bs + 2, bs - 4, bs - 4);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+//  Dessin du plateau
+// ══════════════════════════════════════════════
+function drawBoard() {
+  ctx.fillStyle = '#000014';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = '#0d0d2e'; ctx.lineWidth = 0.5;
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      ctx.strokeRect(c * BS, r * BS, BS, BS);
+
+  board.forEach((row, r) =>
+    row.forEach((cell, c) => {
+      if (cell) drawBlock(ctx, c, r, cell.color, BS, cell.shiny, cell.placedAt);
+    })
+  );
+
+  // Flash des lignes complètes pendant l'animation de flip
+  if (flipHighlightRows.length > 0) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.82)';
+    flipHighlightRows.forEach(r => ctx.fillRect(0, r * BS, canvas.width, BS));
+    ctx.restore();
+  }
+
+  if (current && !over) {
+    const gd = ghostDY();
+    if (gd > 0) {
+      ctx.globalAlpha = 0.22;
+      current.shape.forEach((row, r) =>
+        row.forEach((cell, c) => {
+          if (cell) drawBlock(ctx, current.x + c, current.y + r + gd, current.color, BS);
+        })
+      );
+      ctx.globalAlpha = 1;
+    }
+    current.shape.forEach((row, r) =>
+      row.forEach((cell, c) => {
+        if (cell) drawBlock(ctx, current.x + c, current.y + r, current.color, BS, current.shiny, null);
+      })
+    );
+  }
+
+  // Particules par-dessus tout
+  drawParticles();
+
+  if (paused && !over) {
+    ctx.fillStyle = 'rgba(0,0,15,0.65)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00c8ff';
+    ctx.font = `900 ${BS * 1.8}px Arial Black, Arial`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('PAUSE', canvas.width / 2, canvas.height / 2);
+  }
+}
+
+function drawNext() {
+  const NB = nextCv._nb || 16;
+  nextCtx.fillStyle = '#000014';
+  nextCtx.fillRect(0, 0, nextCv.width, nextCv.height);
+  if (!nextPiece) return;
+  const s = nextPiece.shape;
+  const ox = Math.floor((4 - s[0].length) / 2);
+  const oy = Math.floor((4 - s.length) / 2);
+  s.forEach((row, r) =>
+    row.forEach((cell, c) => {
+      if (cell) drawBlock(nextCtx, c + ox, r + oy, nextPiece.color, NB, nextPiece.shiny, null);
+    })
+  );
+}
+
+// ══════════════════════════════════════════════
+//  Boucle de jeu
+// ══════════════════════════════════════════════
+function loop(ts) {
+  const dt = lastTs ? ts - lastTs : 16;
+  lastTs = ts;
+
+  if (!over) {
+    if (!paused && !flipInProgress && current) {
+      const spd = fastDrop ? Math.min(40, dropSpeed * 0.05) : dropSpeed;
+      dropAcc += dt;
+      if (dropAcc >= spd) {
+        dropAcc = 0;
+        if (valid(current, 0, 1)) current.y++;
+        else lock();
+      }
+    }
+
+    // Grenades — suspendues pendant le flip
+    if (!paused && !flipInProgress) checkShinyExplosions();
+
+    updateParticles(dt);
+    drawBoard();
+    drawNext();
+  }
+  rafId = requestAnimationFrame(loop);
+}
+
+// ══════════════════════════════════════════════
+//  Contrôles — boutons
+// ══════════════════════════════════════════════
+function btn(id, onPress, onRelease) {
+  const el = document.getElementById(id);
+  const press = e => { e.preventDefault(); if (onPress) onPress(); };
+  const rel   = e => { e.preventDefault(); if (onRelease) onRelease(); };
+  el.addEventListener('touchstart', press, { passive: false });
+  if (onRelease) {
+    el.addEventListener('touchend',    rel, { passive: false });
+    el.addEventListener('touchcancel', rel, { passive: false });
+  }
+  el.addEventListener('mousedown', press);
+  if (onRelease) el.addEventListener('mouseup', rel);
+  el.addEventListener('click', press);
+}
+
+btn('btn-up',    () => rotate());
+btn('btn-left',  () => { if (!paused && !over && current && valid(current, -1, 0)) current.x--; });
+btn('btn-right', () => { if (!paused && !over && current && valid(current,  1, 0)) current.x++; });
+btn('btn-down',  () => { fastDrop = true; }, () => { fastDrop = false; });
+btn('tour-btn',  () => rotate());
+btn('flip-btn',  () => startFlip());
+
+document.getElementById('pause-btn').addEventListener('click', togglePause);
+document.getElementById('pause-btn').addEventListener('touchstart', e => { e.preventDefault(); togglePause(); }, { passive: false });
+
+function togglePause() {
+  if (over) return;
+  paused = !paused;
+  document.getElementById('pause-btn').textContent = paused ? 'REPRENDRE' : 'PAUSE';
+  if (paused) { lastTs = 0; showOverlay(true); }
+  else hideOverlay();
+}
+
+document.getElementById('ov-btn').addEventListener('click', () => {
+  if (over) initGame();
+  else { paused = false; document.getElementById('pause-btn').textContent = 'PAUSE'; hideOverlay(); }
+});
+
+// ══════════════════════════════════════════════
+//  Clavier
+// ══════════════════════════════════════════════
+const held = {};
+document.addEventListener('keydown', e => {
+  if (held[e.code]) return;
+  held[e.code] = true;
+  if (over) { if (e.key === 'Enter') initGame(); return; }
+  switch (e.key) {
+    case 'ArrowLeft':  if (!paused && current && valid(current, -1, 0)) current.x--; break;
+    case 'ArrowRight': if (!paused && current && valid(current,  1, 0)) current.x++; break;
+    case 'ArrowDown':  fastDrop = true; break;
+    case 'ArrowUp':    rotate(); break;
+    case ' ':          e.preventDefault(); if (!paused && current) hardDrop(); break;
+    case 'p': case 'P': case 'Escape': togglePause(); break;
+  }
+});
+document.addEventListener('keyup', e => {
+  delete held[e.code];
+  if (e.key === 'ArrowDown') fastDrop = false;
+});
+document.addEventListener('mouseup',    () => { fastDrop = false; });
+document.addEventListener('touchend',   () => { fastDrop = false; });
+document.addEventListener('touchcancel',() => { fastDrop = false; });
+
+// ══════════════════════════════════════════════
+//  Swipe sur le canvas
+// ══════════════════════════════════════════════
+let tx0, ty0, tTime0;
+canvas.addEventListener('touchstart', e => {
+  tx0 = e.touches[0].clientX; ty0 = e.touches[0].clientY;
+  tTime0 = Date.now();
+}, { passive: true });
+
+canvas.addEventListener('touchend', e => {
+  if (!e.changedTouches.length || paused || over) return;
+  const dx = e.changedTouches[0].clientX - tx0;
+  const dy = e.changedTouches[0].clientY - ty0;
+  const dt = Date.now() - tTime0;
+  const adx = Math.abs(dx), ady = Math.abs(dy);
+  if (adx < 12 && ady < 12) { rotate(); return; }
+  if (dt < 300) {
+    if (adx > ady) {
+      if (current && valid(current, dx > 0 ? 1 : -1, 0)) current.x += dx > 0 ? 1 : -1;
+    } else if (dy > 30) { hardDrop(); }
+  }
+}, { passive: true });
+
+// ══════════════════════════════════════════════
+//  Resize
+// ══════════════════════════════════════════════
+window.addEventListener('resize', () => {
+  setupCanvas(); drawBoard(); drawNext();
+});
+
+// ══════════════════════════════════════════════
+//  Start screen
+// ══════════════════════════════════════════════
+function startGame() {
+  document.getElementById('start-screen').classList.add('hidden');
+  setupCanvas();
+  initGame();
+}
+
+const startBtn = document.getElementById('start-btn');
+startBtn.addEventListener('click', startGame);
+startBtn.addEventListener('touchstart', e => { e.preventDefault(); startGame(); }, { passive: false });
+
+setupCanvas();
+
+// ── Service Worker (PWA installable) ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
