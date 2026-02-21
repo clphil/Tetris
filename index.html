@@ -506,6 +506,140 @@
     }
 
     /* ══════════════════════════════════════
+       SAISIE D'INITIALES (fin de partie)
+    ══════════════════════════════════════ */
+    #initials-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,15,0.93);
+      display: none;
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 300;
+      gap: clamp(8px, 2vh, 18px);
+    }
+    #initials-overlay.show { display: flex; }
+    #init-game-over {
+      font-size: clamp(1.4rem, 5vw, 2.2rem);
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: #ff4444;
+      text-shadow: 0 0 20px #ff0000;
+    }
+    #init-final-score {
+      font-size: clamp(0.8rem, 2.5vw, 1.1rem);
+      color: #ccc;
+      letter-spacing: 2px;
+    }
+    #init-prompt {
+      font-size: clamp(0.62rem, 2vw, 0.88rem);
+      color: #00c8ff;
+      letter-spacing: 4px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+    #init-inputs {
+      display: flex;
+      gap: clamp(10px, 3.5vw, 18px);
+      margin: 2px 0;
+    }
+    .init-char {
+      width: clamp(52px, 15vw, 72px);
+      height: clamp(62px, 18vw, 84px);
+      background: #0a0a30;
+      border: 2px solid #00c8ff;
+      color: #fff;
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: clamp(2rem, 9vw, 3rem);
+      font-weight: 900;
+      text-align: center;
+      text-transform: uppercase;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #00c8ff33;
+      outline: none;
+      caret-color: transparent;
+      -webkit-appearance: none;
+    }
+    .init-char:focus {
+      border-color: #fff;
+      box-shadow: 0 0 22px #00c8ffaa;
+    }
+    #init-ok {
+      background: #0e0e38;
+      border: 2px solid #00c8ff;
+      color: #00c8ff;
+      padding: clamp(8px, 2vh, 14px) clamp(36px, 11vw, 60px);
+      font-size: clamp(0.78rem, 2.5vw, 1rem);
+      font-weight: 900;
+      letter-spacing: 4px;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 12px #00c8ff44;
+      margin-top: 2px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #init-ok:active { background: #003355; }
+    #init-ok:disabled { opacity: 0.28; cursor: default; box-shadow: none; }
+
+    /* ══════════════════════════════════════
+       TABLEAU DES SCORES
+    ══════════════════════════════════════ */
+    #scores-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,15,0.96);
+      display: none;
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 300;
+      gap: clamp(5px, 1.3vh, 11px);
+    }
+    #scores-overlay.show { display: flex; }
+    #sc-title {
+      font-size: clamp(1rem, 3.5vw, 1.6rem);
+      font-weight: 900;
+      letter-spacing: 5px;
+      color: #00c8ff;
+      text-shadow: 0 0 18px #00c8ff77;
+      margin-bottom: 4px;
+    }
+    #sc-list {
+      list-style: none;
+      padding: 0; margin: 0;
+      width: min(84vw, 310px);
+    }
+    #sc-list li {
+      display: flex;
+      align-items: center;
+      padding: clamp(4px, 1vh, 8px) 10px;
+      border-bottom: 1px solid rgba(0,200,255,0.07);
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: clamp(0.72rem, 2.6vw, 0.96rem);
+    }
+    #sc-list li.sc-new {
+      background: rgba(0,200,255,0.1);
+      border: 1px solid rgba(0,200,255,0.3);
+      border-radius: 6px;
+    }
+    .sc-rank  { color: #6666aa; width: 28px; text-align: right; flex-shrink: 0; }
+    .sc-init  { color: #00c8ff; letter-spacing: 4px; margin: 0 10px; flex: 1; }
+    .sc-score { color: #fff; text-align: right; flex-shrink: 0;
+                text-shadow: 0 0 6px #00c8ff33; }
+    #sc-replay {
+      background: #0e0e38;
+      border: 2px solid #00c8ff;
+      color: #00c8ff;
+      padding: clamp(8px, 2vh, 14px) clamp(32px, 10vw, 56px);
+      font-size: clamp(0.72rem, 2.2vw, 0.96rem);
+      font-weight: 900;
+      letter-spacing: 4px;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 14px #00c8ff55;
+      margin-top: clamp(6px, 1.5vh, 16px);
+      -webkit-tap-highlight-color: transparent;
+    }
+    #sc-replay:active { background: #003355; }
+
+    /* ══════════════════════════════════════
        PORTRAIT
     ══════════════════════════════════════ */
     @media (orientation: portrait) {
@@ -683,7 +817,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v21022026.1627</div>
+  <div id="version-label">v21022026.1655</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -743,11 +877,34 @@
 <!-- signature (portrait = dans la grille CSS, paysage = fixed) -->
 <div id="signature">designed by Phil C.</div>
 
-<!-- ══ OVERLAY pause / game over ══ -->
+<!-- ══ OVERLAY pause ══ -->
 <div id="overlay">
-  <div id="ov-title">GAME OVER</div>
-  <div id="ov-score">Score : 0</div>
-  <button id="ov-btn">REJOUER</button>
+  <div id="ov-title">PAUSE</div>
+  <div id="ov-score"></div>
+  <button id="ov-btn">REPRENDRE</button>
+</div>
+
+<!-- ══ SAISIE INITIALES ══ -->
+<div id="initials-overlay">
+  <div id="init-game-over">GAME OVER</div>
+  <div id="init-final-score">Score : 0</div>
+  <div id="init-prompt">TES INITIALES</div>
+  <div id="init-inputs">
+    <input class="init-char" id="ic0" maxlength="1" type="text"
+           autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+    <input class="init-char" id="ic1" maxlength="1" type="text"
+           autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+    <input class="init-char" id="ic2" maxlength="1" type="text"
+           autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+  </div>
+  <button id="init-ok" disabled>OK</button>
+</div>
+
+<!-- ══ TABLEAU DES SCORES ══ -->
+<div id="scores-overlay">
+  <div id="sc-title">MEILLEURS SCORES</div>
+  <ol id="sc-list"></ol>
+  <button id="sc-replay">REJOUER</button>
 </div>
 
 <script>
@@ -956,7 +1113,7 @@ function initGame() {
 function spawn() {
   current = nextPiece;
   nextPiece = drawFromBag();
-  if (!valid(current, 0, 0)) { over = true; showOverlay(false); }
+  if (!valid(current, 0, 0)) { over = true; showInitialsScreen(); }
 }
 
 // ══════════════════════════════════════════════
@@ -1241,8 +1398,112 @@ function finalizeFlip() {
   document.getElementById('ingame-gravity').classList.remove('flipping');
   flipInProgress = false;
   spawn();
-  if (over) showOverlay(false);
+  if (over) showInitialsScreen();
 }
+
+// ══════════════════════════════════════════════
+//  SCORES — localStorage
+// ══════════════════════════════════════════════
+const SCORES_KEY = 'tetris_gravity_scores';
+
+function loadScores() {
+  try { return JSON.parse(localStorage.getItem(SCORES_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveScore(initials, finalScore) {
+  const scores = loadScores();
+  const entry = { initials, score: finalScore };
+  scores.push(entry);
+  scores.sort((a, b) => b.score - a.score);
+  const top = scores.slice(0, 10);
+  localStorage.setItem(SCORES_KEY, JSON.stringify(top));
+  // Trouve le rang de la nouvelle entrée (première occurrence du même objet)
+  const idx = top.findIndex(e => e === entry);
+  return { scores: top, newIdx: idx };
+}
+
+// ── Écran saisie initiales ──
+function showInitialsScreen() {
+  document.getElementById('init-final-score').textContent = `Score : ${score}`;
+  const inputs = ['ic0','ic1','ic2'].map(id => document.getElementById(id));
+  inputs.forEach(inp => { inp.value = ''; });
+  document.getElementById('init-ok').disabled = true;
+  document.getElementById('initials-overlay').classList.add('show');
+  setTimeout(() => inputs[0].focus(), 80);
+}
+
+function hideInitialsScreen() {
+  document.getElementById('initials-overlay').classList.remove('show');
+}
+
+function getInitials() {
+  return ['ic0','ic1','ic2'].map(id => document.getElementById(id).value.toUpperCase()).join('');
+}
+
+function updateInitialsOkBtn() {
+  const filled = ['ic0','ic1','ic2'].every(id => document.getElementById(id).value.length === 1);
+  document.getElementById('init-ok').disabled = !filled;
+}
+
+function submitInitials() {
+  const initials = getInitials();
+  if (initials.length < 3) return;
+  const { scores, newIdx } = saveScore(initials, score);
+  hideInitialsScreen();
+  showScoresScreen(scores, newIdx);
+}
+
+// Navigation entre les 3 cases ──
+(function setupInitialsInput() {
+  const inputs = ['ic0','ic1','ic2'].map(id => document.getElementById(id));
+  inputs.forEach((inp, i) => {
+    inp.addEventListener('input', () => {
+      // Garde seulement le dernier caractère alphabétique
+      inp.value = inp.value.replace(/[^A-Za-z]/g, '').slice(-1).toUpperCase();
+      if (inp.value && i < 2) inputs[i + 1].focus();
+      updateInitialsOkBtn();
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !inp.value && i > 0) {
+        e.preventDefault();
+        inputs[i - 1].focus();
+        inputs[i - 1].value = '';
+        updateInitialsOkBtn();
+      }
+      if (e.key === 'Enter') submitInitials();
+    });
+  });
+  document.getElementById('init-ok').addEventListener('click', submitInitials);
+  document.getElementById('init-ok').addEventListener('touchstart', e => { e.preventDefault(); submitInitials(); }, { passive: false });
+})();
+
+// ── Écran tableau des scores ──
+function showScoresScreen(scores, newIdx) {
+  const list = document.getElementById('sc-list');
+  list.innerHTML = '';
+  if (scores.length === 0) {
+    list.innerHTML = '<li style="color:#6666aa;justify-content:center;padding:12px;">Aucun score encore</li>';
+  } else {
+    scores.forEach((entry, i) => {
+      const li = document.createElement('li');
+      if (i === newIdx) li.classList.add('sc-new');
+      li.innerHTML =
+        `<span class="sc-rank">#${i + 1}</span>` +
+        `<span class="sc-init">${entry.initials}</span>` +
+        `<span class="sc-score">${entry.score.toLocaleString('fr-FR')}</span>`;
+      list.appendChild(li);
+    });
+  }
+  document.getElementById('scores-overlay').classList.add('show');
+}
+
+function hideScoresScreen() {
+  document.getElementById('scores-overlay').classList.remove('show');
+}
+
+document.getElementById('sc-replay').addEventListener('click', () => { hideScoresScreen(); initGame(); });
+document.getElementById('sc-replay').addEventListener('touchstart', e => { e.preventDefault(); hideScoresScreen(); initGame(); }, { passive: false });
 
 // ══════════════════════════════════════════════
 //  UI
@@ -1256,14 +1517,8 @@ function updateUI() {
 function showOverlay(isPause) {
   const ov = document.getElementById('overlay');
   const title = document.getElementById('ov-title');
-  if (isPause) {
-    title.textContent = 'PAUSE'; title.className = 'pause-title';
-    document.getElementById('ov-btn').textContent = 'REPRENDRE';
-  } else {
-    title.textContent = 'GAME OVER'; title.className = '';
-    document.getElementById('ov-btn').textContent = 'REJOUER';
-  }
-  document.getElementById('ov-score').textContent = `Score : ${score}`;
+  title.textContent = 'PAUSE'; title.className = 'pause-title';
+  document.getElementById('ov-btn').textContent = 'REPRENDRE';
   ov.classList.add('show');
 }
 
@@ -1454,8 +1709,9 @@ function togglePause() {
 }
 
 document.getElementById('ov-btn').addEventListener('click', () => {
-  if (over) initGame();
-  else { paused = false; document.getElementById('pause-btn').textContent = 'PAUSE'; hideOverlay(); }
+  paused = false;
+  document.getElementById('pause-btn').textContent = 'PAUSE';
+  hideOverlay();
 });
 
 // ══════════════════════════════════════════════
@@ -1465,7 +1721,13 @@ const held = {};
 document.addEventListener('keydown', e => {
   if (held[e.code]) return;
   held[e.code] = true;
-  if (over) { if (e.key === 'Enter') initGame(); return; }
+  if (over) {
+    if (e.key === 'Enter') {
+      if (document.getElementById('initials-overlay').classList.contains('show')) submitInitials();
+      else if (document.getElementById('scores-overlay').classList.contains('show')) { hideScoresScreen(); initGame(); }
+    }
+    return;
+  }
   switch (e.key) {
     case 'ArrowLeft':  if (!paused && current && valid(current, -1, 0)) current.x--; break;
     case 'ArrowRight': if (!paused && current && valid(current,  1, 0)) current.x++; break;

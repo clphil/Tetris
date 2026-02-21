@@ -1,5 +1,5 @@
-const CACHE = 'tetris-v1';
-const ASSETS = ['./index.html', './manifest.json', './icon.svg'];
+const CACHE = 'tetris-v3';
+const ASSETS = ['./index.html', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -17,8 +17,15 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
+// Réseau en premier → toujours la version fraîche ; cache en secours si hors-ligne
 self.addEventListener('fetch', e => {
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
+    fetch(e.request)
+      .then(response => {
+        const clone = response.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
