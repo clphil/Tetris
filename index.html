@@ -666,21 +666,18 @@
 
     <!-- AUTRES FEATURES -->
     <div class="tuto-section">
-      <div class="tuto-h">&#9889; Autres</div>
-      <div class="tuto-grid">
-        <span class="tbadge tbadge-b" style="margin:2px 0">Ghost</span>
-        <span class="tuto-v">O&ugrave; elle tombe ?</span>
-        <span class="tbadge tbadge-b" style="margin:2px 0">Niveau</span>
-        <span class="tuto-v">+10 lignes = +vitesse</span>
-        <span class="tbadge tbadge-b" style="margin:2px 0">Score</span>
-        <span class="tuto-v">Combo x1&rarr;x16</span>
-      </div>
+      <div class="tuto-h">&#9998; Astuce</div>
+      <p class="tuto-p">
+        Pour plus de confort, <strong style="color:#00e8ff">ajoute l'app sur ton &eacute;cran d'accueil</strong>&nbsp;!<br>
+        iOS&nbsp;: partage &#8594; &laquo;&nbsp;Sur l'&eacute;cran d'accueil&nbsp;&raquo;<br>
+        Android&nbsp;: menu &#8594; &laquo;&nbsp;Ajouter &agrave; l'&eacute;cran d'accueil&nbsp;&raquo;
+      </p>
     </div>
 
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v21022026.1203</div>
+  <div id="version-label">v21022026.1212</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -1063,11 +1060,22 @@ function checkShinyExplosions() {
 
   let anyExploded = false;
   for (const { color, cells } of Object.values(groups)) {
-    // Particules depuis chaque cellule de la pièce
-    cells.forEach(({ r, c }) => spawnExplosion(c, r, color));
-    // Supprime les cellules du plateau
-    cells.forEach(({ r, c }) => { board[r][c] = null; });
-    score += cells.length * 20;
+    // Collecte : la pièce shiny + toutes les cellules qui la touchent
+    const toDestroy = new Set(cells.map(({ r, c }) => `${r},${c}`));
+    for (const { r, c } of cells) {
+      for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && board[nr][nc])
+          toDestroy.add(`${nr},${nc}`);
+      }
+    }
+    // Particules + suppression
+    for (const key of toDestroy) {
+      const [r, c] = key.split(',').map(Number);
+      spawnExplosion(c, r, board[r][c]?.color || color);
+      board[r][c] = null;
+    }
+    score += toDestroy.size * 20;
     anyExploded = true;
   }
 
