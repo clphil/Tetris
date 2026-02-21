@@ -430,27 +430,34 @@
     #pause-btn:active { background: #003355; }
 
     /* ══════════════════════════════════════
-       BOUTON FLIP (power-up tous les 10 lignes)
+       JAUGE FLIP (circulaire, auto tous les 10 lignes)
     ══════════════════════════════════════ */
-    #flip-btn {
-      background: #1a0800;
-      border: 2px solid #ffcc00;
-      color: #ffcc00;
-      padding: clamp(4px, 1.2vw, 8px) clamp(8px, 2.5vw, 20px);
-      font-size: clamp(0.5rem, 1.6vw, 0.75rem);
-      letter-spacing: 3px;
-      font-weight: 900;
-      border-radius: 6px;
-      cursor: pointer;
-      width: 88%;
-      animation: flipPulse 0.85s ease-in-out infinite;
-      -webkit-tap-highlight-color: transparent;
+    #flip-gauge-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
     }
-    #flip-btn.hidden { display: none; }
-    #flip-btn:active { background: #4a2800; }
-    @keyframes flipPulse {
-      0%, 100% { box-shadow: 0 0 8px #ffcc0055; }
-      50%       { box-shadow: 0 0 22px #ffcc00cc, 0 0 44px #ffcc0044; }
+    #flip-gauge {
+      width: clamp(44px, 12vw, 62px);
+      height: clamp(44px, 12vw, 62px);
+      overflow: visible;
+      transition: filter 0.2s;
+    }
+    #flip-gauge-label {
+      font-size: clamp(0.38rem, 1.3vw, 0.56rem);
+      color: #00c8ff;
+      letter-spacing: 2px;
+      font-weight: 900;
+      font-family: 'Arial Black', Arial, sans-serif;
+    }
+    /* Avertissement : derniers 3 lignes */
+    @keyframes flipGaugePulse {
+      0%, 100% { filter: drop-shadow(0 0 4px #ffcc00aa); }
+      50%       { filter: drop-shadow(0 0 12px #ffcc00ff); }
+    }
+    #flip-gauge-wrap.flip-warn #flip-gauge {
+      animation: flipGaugePulse 0.55s ease-in-out infinite;
     }
 
     /* ══════════════════════════════════════
@@ -740,11 +747,7 @@
         padding: 4px 6px;
         font-size: clamp(0.48rem, 2.8vw, 0.72rem);
       }
-      #flip-btn {
-        width: 90%;
-        padding: 4px 6px;
-        font-size: clamp(0.48rem, 2.8vw, 0.72rem);
-      }
+      #flip-gauge { width: clamp(40px, 11vw, 54px); height: clamp(40px, 11vw, 54px); }
     }
   </style>
 </head>
@@ -817,7 +820,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v21022026.1654</div>
+  <div id="version-label">v21022026.1722</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -865,7 +868,19 @@
       <span>TOUR</span>
     </button>
     <button id="pause-btn">PAUSE</button>
-    <button id="flip-btn" class="hidden">&#8645; FLIP</button>
+    <div id="flip-gauge-wrap">
+      <svg id="flip-gauge" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="22" cy="22" r="17" fill="none" stroke="#1a1a44" stroke-width="4"/>
+        <circle id="flip-arc" cx="22" cy="22" r="17" fill="none"
+                stroke="#00c8ff" stroke-width="4"
+                stroke-dasharray="106.81" stroke-dashoffset="106.81"
+                stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+        <text id="flip-icon" x="22" y="27.5" text-anchor="middle"
+              font-size="14" font-family="Arial" fill="#00c8ff">&#8645;</text>
+      </svg>
+      <div id="flip-gauge-label">FLIP</div>
+    </div>
     <div class="info-box">
       <div class="box-label">NIVEAU</div>
       <div id="level-val">1</div>
@@ -1059,7 +1074,6 @@ let dropSpeed, dropAcc, lastTs, rafId;
 let fastDrop = false;
 let bag = [];
 let shinyCounter = 0; // ID unique par pièce grenade
-let flipAvailable    = false;
 let flipInProgress   = false;
 let lastFlipMilestone = 0;
 let flipHighlightRows = []; // lignes à flasher pendant l'anim de suppression
@@ -1099,8 +1113,7 @@ function initGame() {
   dropSpeed = 850; dropAcc = 0; lastTs = 0;
   paused    = false; over = false; fastDrop = false;
   particles = [];
-  flipAvailable = false; flipInProgress = false; lastFlipMilestone = 0;
-  document.getElementById('flip-btn').classList.add('hidden');
+  flipInProgress = false; lastFlipMilestone = 0;
   bag = []; fillBag();
   nextPiece = drawFromBag();
   spawn();
@@ -1200,13 +1213,6 @@ function clearLines() {
   lines += cleared;
   level = Math.floor(lines / 10) + 1;
   dropSpeed = Math.max(120, 850 - (level - 1) * 50);
-  // Débloque le bouton FLIP à chaque nouveau palier de 10 lignes
-  const milestone = Math.floor(lines / 10) * 10;
-  if (milestone > 0 && milestone > lastFlipMilestone) {
-    lastFlipMilestone = milestone;
-    flipAvailable = true;
-    document.getElementById('flip-btn').classList.remove('hidden');
-  }
   updateUI();
   return cleared;
 }
@@ -1232,8 +1238,15 @@ function lock() {
     })
   );
 
+  const prevMilestone = lastFlipMilestone;
   clearLines();
-  spawn();
+  const newMilestone = Math.floor(lines / 10) * 10;
+  if (newMilestone > 0 && newMilestone > prevMilestone && !flipInProgress) {
+    lastFlipMilestone = newMilestone;
+    startFlip();
+  } else {
+    spawn();
+  }
 }
 
 function hardDrop() {
@@ -1315,11 +1328,9 @@ function gravityStepOnce() {
 }
 
 function startFlip() {
-  if (flipInProgress || !flipAvailable || over) return;
-  flipAvailable  = false;
+  if (flipInProgress || over) return;
   flipInProgress = true;
   current = null;
-  document.getElementById('flip-btn').classList.add('hidden');
   document.getElementById('ingame-gravity').classList.add('flipping');
 
   const wrap = document.getElementById('board-wrap');
@@ -1508,10 +1519,28 @@ document.getElementById('sc-replay').addEventListener('touchstart', e => { e.pre
 // ══════════════════════════════════════════════
 //  UI
 // ══════════════════════════════════════════════
+function updateFlipGauge() {
+  const CIRC = 106.81; // 2π × 17
+  const linesInCycle = lines % 10;
+  const offset = CIRC * (1 - linesInCycle / 10);
+  const arc  = document.getElementById('flip-arc');
+  const icon = document.getElementById('flip-icon');
+  const wrap = document.getElementById('flip-gauge-wrap');
+  if (!arc) return;
+  arc.style.strokeDashoffset = offset;
+  const warn = linesInCycle >= 7;
+  const col  = warn ? '#ffcc00' : '#00c8ff';
+  arc.style.stroke  = col;
+  icon.style.fill   = col;
+  if (warn) wrap.classList.add('flip-warn');
+  else      wrap.classList.remove('flip-warn');
+}
+
 function updateUI() {
   document.getElementById('score-val').textContent = score;
   document.getElementById('lines-val').textContent = `LIGNES : ${lines}`;
   document.getElementById('level-val').textContent = level;
+  updateFlipGauge();
 }
 
 function showOverlay(isPause) {
@@ -1695,7 +1724,7 @@ btn('btn-left',  () => { if (!paused && !over && current && valid(current, -1, 0
 btn('btn-right', () => { if (!paused && !over && current && valid(current,  1, 0)) current.x++; });
 btn('btn-down',  () => { fastDrop = true; }, () => { fastDrop = false; });
 btn('tour-btn',  () => rotate());
-btn('flip-btn',  () => startFlip());
+
 
 document.getElementById('pause-btn').addEventListener('click', togglePause);
 document.getElementById('pause-btn').addEventListener('touchstart', e => { e.preventDefault(); togglePause(); }, { passive: false });
