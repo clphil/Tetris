@@ -16,187 +16,256 @@
       touch-action: none;
     }
 
-    #app {
-      display: flex;
-      width: 100vw;
-      height: 100vh;
-      align-items: stretch;
-      overflow: hidden;
-    }
-
-    /* ─── LEFT PANEL ─── */
-    #left-panel {
+    /* ══════════════════════════════════════
+       START SCREEN
+    ══════════════════════════════════════ */
+    #start-screen {
+      position: fixed;
+      inset: 0;
+      background: #080820;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      width: 28%;
-      padding: 6px 4px 18px;
-      flex-shrink: 0;
-      overflow: hidden;
+      justify-content: center;
+      gap: clamp(20px, 5vh, 40px);
+      z-index: 500;
     }
+    #start-screen.hidden { display: none; }
 
-    #title {
-      font-size: clamp(1.1rem, 4.5vw, 2rem);
+    #start-title {
+      font-size: clamp(3.5rem, 20vw, 8rem);
       font-weight: 900;
-      letter-spacing: 4px;
+      letter-spacing: clamp(6px, 4vw, 16px);
+      text-transform: uppercase;
       background: linear-gradient(90deg,
         #ff0000 0%, #ff6600 16%, #ffff00 32%,
         #00ff00 48%, #00aaff 64%, #aa00ff 80%, #ff00aa 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      text-transform: uppercase;
+      animation: titlePulse 2.5s ease-in-out infinite;
+    }
+    @keyframes titlePulse {
+      0%, 100% { filter: brightness(1); }
+      50%       { filter: brightness(1.35) drop-shadow(0 0 18px rgba(0,200,255,0.55)); }
     }
 
-    /* D-pad */
-    #dpad {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
+    #start-by {
+      font-size: clamp(0.7rem, 3.5vw, 1.1rem);
+      color: rgba(160, 160, 220, 0.65);
+      letter-spacing: clamp(2px, 1.5vw, 5px);
+      font-style: italic;
+      font-family: Arial, sans-serif;
+      font-weight: 400;
     }
 
-    .drow { display: flex; gap: 4px; align-items: center; }
-
-    .dpad-spacer {
-      width: clamp(36px, 9vw, 52px);
-      height: clamp(36px, 9vw, 52px);
-    }
-
-    .ctrl-btn {
-      width: clamp(36px, 9vw, 52px);
-      height: clamp(36px, 9vw, 52px);
-      background: #0e0e38;
-      border: 2px solid #00c8ff;
+    #start-btn {
+      margin-top: clamp(8px, 2vh, 20px);
+      background: #0a0a30;
+      border: 3px solid #00c8ff;
       color: #00c8ff;
-      font-size: clamp(0.9rem, 2.8vw, 1.3rem);
-      border-radius: 10px;
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: clamp(1.1rem, 6vw, 1.8rem);
+      font-weight: 900;
+      letter-spacing: clamp(4px, 2vw, 8px);
+      padding: clamp(12px, 3vh, 22px) clamp(36px, 12vw, 72px);
+      border-radius: 14px;
       cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      user-select: none; -webkit-user-select: none;
-      box-shadow: 0 0 6px #00c8ff55;
-      transition: background 0.08s, box-shadow 0.08s;
+      animation: btnPulse 1.8s ease-in-out infinite;
       -webkit-tap-highlight-color: transparent;
     }
-
-    .ctrl-btn:active, .ctrl-btn.active {
-      background: #00395a;
-      box-shadow: 0 0 12px #00c8ffaa;
+    #start-btn:active { background: #003355; }
+    @keyframes btnPulse {
+      0%, 100% { box-shadow: 0 0 10px #00c8ff44; }
+      50%       { box-shadow: 0 0 30px #00c8ffbb, 0 0 60px #00c8ff33; }
     }
 
-    #chute-label {
-      font-size: clamp(0.45rem, 1.4vw, 0.6rem);
-      color: #00c8ff;
-      letter-spacing: 2px;
-      margin-top: 2px;
-      text-align: center;
+    /* ══════════════════════════════════════
+       LAYOUT PAYSAGE (défaut)
+       left-panel | center-panel | right-panel
+    ══════════════════════════════════════ */
+    #app {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
     }
 
-    /* Speed */
-    #speed-section {
-      width: 90%;
+    /* ── Panneau gauche ── */
+    #left-panel {
+      flex: 0 0 27%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
-    }
-
-    #speed-label {
-      font-size: clamp(0.45rem, 1.5vw, 0.65rem);
-      color: #00c8ff;
-      letter-spacing: 3px;
-    }
-
-    #speed-track {
-      width: 100%;
-      height: 8px;
-      background: #0e0e38;
-      border: 1px solid #00c8ff;
-      border-radius: 4px;
+      justify-content: space-between;
+      padding: 6px 4px 18px;
       overflow: hidden;
-      box-shadow: 0 0 4px #00c8ff44;
+      min-width: 0;
     }
 
-    #speed-fill {
-      height: 100%;
-      width: 5%;
-      background: linear-gradient(90deg, #0055ff, #00ffff);
-      border-radius: 4px;
-      transition: width 0.4s;
-    }
-
-    /* ─── CENTER PANEL ─── */
+    /* ── Canvas central ── */
     #center-panel {
-      flex: 1;
+      flex: 1 1 0;           /* prend tout l'espace restant */
+      min-width: 0;          /* CRITIQUE : évite le débordement flex */
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
 
     #board-wrap {
       border: 3px solid #00c8ff;
       box-shadow: 0 0 20px #00c8ff55, 0 0 40px #00c8ff22, inset 0 0 8px #00001a;
       line-height: 0;
-      position: relative;
+      flex-shrink: 0;
     }
-
     #board { display: block; }
 
-    /* ─── RIGHT PANEL ─── */
+    /* ── Panneau droit ── */
     #right-panel {
+      flex: 0 0 27%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      width: 28%;
       padding: 6px 4px 18px;
-      flex-shrink: 0;
       overflow: hidden;
+      min-width: 0;
     }
 
-    .info-box {
-      border: 2px solid #00c8ff;
-      padding: 5px 8px;
-      width: 90%;
+    /* ══════════════════════════════════════
+       TITRE TETRIS (paysage, panneau gauche)
+    ══════════════════════════════════════ */
+    #title {
+      font-size: clamp(1rem, 4vw, 1.8rem);
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg,
+        #ff0000 0%, #ff6600 16%, #ffff00 32%,
+        #00ff00 48%, #00aaff 64%, #aa00ff 80%, #ff00aa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ══════════════════════════════════════
+       D-PAD
+    ══════════════════════════════════════ */
+    #dpad {
       display: flex;
       flex-direction: column;
       align-items: center;
-      box-shadow: 0 0 8px #00c8ff33;
-      background: #0a0a28;
+      gap: 4px;
+    }
+    .drow { display: flex; gap: 4px; align-items: center; }
+
+    .dpad-spacer {
+      width: clamp(34px, 8.5vw, 52px);
+      height: clamp(34px, 8.5vw, 52px);
     }
 
-    .box-label {
-      font-size: clamp(0.45rem, 1.5vw, 0.65rem);
+    .ctrl-btn {
+      width: clamp(34px, 8.5vw, 52px);
+      height: clamp(34px, 8.5vw, 52px);
+      background: #0e0e38;
+      border: 2px solid #00c8ff;
       color: #00c8ff;
-      letter-spacing: 4px;
-      margin-bottom: 3px;
+      font-size: clamp(0.9rem, 2.6vw, 1.3rem);
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      user-select: none; -webkit-user-select: none;
+      box-shadow: 0 0 6px #00c8ff55;
+      transition: background 0.08s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .ctrl-btn:active { background: #00395a; box-shadow: 0 0 12px #00c8ffaa; }
+
+    #chute-label {
+      font-size: clamp(0.4rem, 1.3vw, 0.58rem);
+      color: #00c8ff;
+      letter-spacing: 2px;
+      margin-top: 2px;
+      text-align: center;
     }
 
+    /* ══════════════════════════════════════
+       BARRE DE VITESSE
+    ══════════════════════════════════════ */
+    #speed-section {
+      width: 88%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    #speed-label {
+      font-size: clamp(0.4rem, 1.4vw, 0.62rem);
+      color: #00c8ff;
+      letter-spacing: 3px;
+    }
+    #speed-track {
+      width: 100%; height: 8px;
+      background: #0e0e38;
+      border: 1px solid #00c8ff;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    #speed-fill {
+      height: 100%; width: 5%;
+      background: linear-gradient(90deg, #0055ff, #00ffff);
+      border-radius: 4px;
+      transition: width 0.4s;
+    }
+
+    /* ══════════════════════════════════════
+       INFO BOXES
+    ══════════════════════════════════════ */
+    .info-box {
+      border: 2px solid #00c8ff;
+      padding: 4px 8px;
+      width: 88%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #0a0a28;
+      box-shadow: 0 0 8px #00c8ff33;
+    }
+    .box-label {
+      font-size: clamp(0.4rem, 1.4vw, 0.62rem);
+      color: #00c8ff;
+      letter-spacing: 3px;
+      margin-bottom: 2px;
+    }
     #score-val {
-      font-size: clamp(1rem, 3.5vw, 1.6rem);
+      font-size: clamp(1rem, 3.2vw, 1.55rem);
       font-weight: 900;
-      color: #ffffff;
       text-shadow: 0 0 8px #00c8ff88;
     }
-
     #lines-val {
-      font-size: clamp(0.45rem, 1.4vw, 0.6rem);
+      font-size: clamp(0.4rem, 1.3vw, 0.58rem);
       color: #8888cc;
-      margin-top: 2px;
+      margin-top: 1px;
     }
-
+    #level-val {
+      font-size: clamp(0.9rem, 2.6vw, 1.25rem);
+      font-weight: 900;
+    }
     #next-canvas { display: block; }
 
-    /* Tour button */
+    /* ══════════════════════════════════════
+       BOUTONS TOUR & PAUSE
+    ══════════════════════════════════════ */
     #tour-btn {
-      width: clamp(48px, 12vw, 68px);
-      height: clamp(48px, 12vw, 68px);
+      width: clamp(44px, 11vw, 64px);
+      height: clamp(44px, 11vw, 64px);
       border-radius: 50%;
       background: #0e0e38;
       border: 3px solid #00c8ff;
       color: #00c8ff;
-      font-size: clamp(0.45rem, 1.4vw, 0.6rem);
+      font-size: clamp(0.4rem, 1.3vw, 0.58rem);
       font-weight: 900;
       letter-spacing: 1px;
       cursor: pointer;
@@ -206,39 +275,27 @@
       box-shadow: 0 0 12px #00c8ff55;
       -webkit-tap-highlight-color: transparent;
     }
-
-    #tour-icon {
-      font-size: clamp(1rem, 3vw, 1.4rem);
-      line-height: 1;
-    }
-
+    #tour-icon { font-size: clamp(1rem, 2.8vw, 1.35rem); line-height: 1; }
     #tour-btn:active { background: #00395a; }
 
-    /* Pause button */
     #pause-btn {
       background: #0e0e38;
       border: 2px solid #00c8ff;
       color: #00c8ff;
-      padding: clamp(5px, 1.5vw, 9px) clamp(10px, 3vw, 22px);
-      font-size: clamp(0.55rem, 1.8vw, 0.8rem);
+      padding: clamp(4px, 1.2vw, 8px) clamp(8px, 2.5vw, 20px);
+      font-size: clamp(0.5rem, 1.6vw, 0.75rem);
       letter-spacing: 3px;
       font-weight: 900;
       border-radius: 6px;
       cursor: pointer;
-      box-shadow: 0 0 8px #00c8ff33;
-      width: 90%;
+      width: 88%;
       -webkit-tap-highlight-color: transparent;
     }
-
     #pause-btn:active { background: #003355; }
 
-    #level-val {
-      font-size: clamp(0.9rem, 2.8vw, 1.3rem);
-      font-weight: 900;
-      color: #ffffff;
-    }
-
-    /* ─── OVERLAY ─── */
+    /* ══════════════════════════════════════
+       OVERLAY (pause / game over)
+    ══════════════════════════════════════ */
     #overlay {
       position: fixed; inset: 0;
       background: rgba(0,0,15,0.88);
@@ -249,18 +306,15 @@
       gap: 14px;
     }
     #overlay.show { display: flex; }
-
     #ov-title {
       font-size: clamp(1.4rem, 5vw, 2.2rem);
       font-weight: 900;
       letter-spacing: 4px;
       color: #ff4444;
-      text-shadow: 0 0 20px #ff0000, 0 0 40px #ff000055;
+      text-shadow: 0 0 20px #ff0000;
     }
     #ov-title.pause-title { color: #00c8ff; text-shadow: 0 0 20px #00c8ff; }
-
     #ov-score { font-size: clamp(0.8rem, 2.5vw, 1.1rem); color: #ccc; letter-spacing: 2px; }
-
     #ov-btn {
       background: #0e0e38;
       border: 2px solid #00c8ff;
@@ -275,24 +329,32 @@
     }
     #ov-btn:active { background: #003355; }
 
-    /* ─── SIGNATURE — paysage uniquement (portrait = dans la grille) ─── */
+    /* ══════════════════════════════════════
+       SIGNATURE — paysage (fixed, discret)
+    ══════════════════════════════════════ */
     #signature {
       position: fixed;
-      bottom: 3px;
-      left: 0; right: 0;
+      bottom: 2px; left: 0; right: 0;
       text-align: center;
-      font-size: 0.48rem;
-      color: rgba(80, 80, 150, 0.65);
+      font-size: 0.46rem;
+      color: rgba(80, 80, 150, 0.55);
       letter-spacing: 2px;
       pointer-events: none;
       z-index: 5;
       font-style: italic;
       font-family: Arial, sans-serif;
-      font-weight: 400;
     }
 
-    /* ─── PORTRAIT ─── */
+    /* ══════════════════════════════════════
+       PORTRAIT
+       ┌─────────────────┐  ← 57vh  board
+       ├────────┬────────┤  ← 43vh-14px  contrôles
+       │  left  │ right  │
+       ├────────┴────────┤  ← 14px signature
+       └─────────────────┘
+    ══════════════════════════════════════ */
     @media (orientation: portrait) {
+
       #app {
         display: grid;
         grid-template-areas:
@@ -303,64 +365,70 @@
         grid-template-rows: 57vh calc(43vh - 14px) 14px;
         width: 100vw;
         height: 100vh;
+        height: 100dvh;
         overflow: hidden;
         align-items: stretch;
       }
 
-      /* Board — zone du haut */
+      /* Board — pleine largeur, moitié haute */
       #center-panel {
         grid-area: center;
         width: 100%;
         height: 100%;
-        padding: 6px 0;
+        padding: 4px 0;
+        flex: unset;
+        min-width: unset;
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
       }
 
-      /* Contrôles gauche — zone bas-gauche */
+      /* Contrôles gauche */
       #left-panel {
         grid-area: left;
+        flex: unset;
+        min-width: unset;
         width: 100%;
         height: 100%;
-        padding: 6px 5px 4px;
+        padding: 5px 5px 3px;
         justify-content: space-evenly;
         overflow: hidden;
         border-top: 1px solid #00c8ff44;
         border-right: 1px solid #00c8ff22;
-        flex-shrink: unset;
       }
 
-      /* Contrôles droite — zone bas-droite */
+      /* Contrôles droite */
       #right-panel {
         grid-area: right;
+        flex: unset;
+        min-width: unset;
         width: 100%;
         height: 100%;
-        padding: 6px 5px 4px;
+        padding: 5px 5px 3px;
         justify-content: space-evenly;
         overflow: hidden;
         border-top: 1px solid #00c8ff44;
-        flex-shrink: unset;
       }
 
-      /* Signature dans la grille (pas de chevauchement) */
+      /* Signature dans la 3e ligne de la grille → zéro chevauchement */
       #signature {
         grid-area: sig;
         position: static;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.48rem;
-        color: rgba(80, 80, 150, 0.65);
+        font-size: 0.46rem;
+        color: rgba(80, 80, 150, 0.55);
         letter-spacing: 2px;
         font-style: italic;
         font-family: Arial, sans-serif;
+        pointer-events: none;
       }
 
       #title { display: none; }
 
-      /* Boutons D-pad plus grands (vw = petite dimension en portrait) */
+      /* Boutons D-pad — vw = largeur totale en portrait */
       .ctrl-btn {
         width: clamp(38px, 11vw, 58px);
         height: clamp(38px, 11vw, 58px);
@@ -370,99 +438,96 @@
         width: clamp(38px, 11vw, 58px);
         height: clamp(38px, 11vw, 58px);
       }
+      #chute-label { font-size: clamp(0.4rem, 2.2vw, 0.58rem); }
 
-      #speed-section { width: 92%; }
-      #speed-label { font-size: clamp(0.45rem, 2.2vw, 0.65rem); }
+      #speed-section { width: 90%; }
+      #speed-label   { font-size: clamp(0.4rem, 2.2vw, 0.6rem); }
 
-      .info-box { width: 92%; padding: 3px 5px; }
-      .box-label { font-size: clamp(0.45rem, 2.2vw, 0.65rem); letter-spacing: 2px; }
+      .info-box  { width: 90%; padding: 2px 5px; }
+      .box-label { font-size: clamp(0.4rem, 2.2vw, 0.6rem); letter-spacing: 2px; margin-bottom: 1px; }
 
-      #score-val { font-size: clamp(1rem, 5vw, 1.6rem); }
-      #lines-val { font-size: clamp(0.4rem, 2vw, 0.55rem); }
-      #level-val { font-size: clamp(0.9rem, 4.5vw, 1.4rem); }
+      #score-val { font-size: clamp(1rem, 5.5vw, 1.6rem); }
+      #lines-val { font-size: clamp(0.38rem, 2vw, 0.54rem); margin-top: 1px; }
+      #level-val { font-size: clamp(0.9rem, 5vw, 1.4rem); }
 
-      #tour-btn {
-        width: clamp(42px, 12vw, 58px);
-        height: clamp(42px, 12vw, 58px);
-        font-size: clamp(0.4rem, 1.8vw, 0.55rem);
-      }
-      #tour-icon { font-size: clamp(0.9rem, 3.5vw, 1.2rem); }
+      #tour-btn   { width: clamp(40px, 12vw, 56px); height: clamp(40px, 12vw, 56px); }
+      #tour-icon  { font-size: clamp(0.9rem, 3.8vw, 1.2rem); }
 
       #pause-btn {
-        width: 92%;
-        padding: 5px 8px;
-        font-size: clamp(0.5rem, 2.8vw, 0.75rem);
+        width: 90%;
+        padding: 4px 6px;
+        font-size: clamp(0.48rem, 2.8vw, 0.72rem);
       }
-
-      #chute-label { font-size: clamp(0.4rem, 2vw, 0.55rem); }
     }
   </style>
 </head>
 <body>
+
+<!-- ══ PAGE D'ACCUEIL ══ -->
+<div id="start-screen">
+  <h1 id="start-title">TETRIS</h1>
+  <div id="start-by">designed by Phil C.</div>
+  <button id="start-btn">&#9654;&nbsp; START</button>
+</div>
+
+<!-- ══ JEU ══ -->
 <div id="app">
 
-  <!-- ─── LEFT PANEL ─── -->
   <div id="left-panel">
     <h1 id="title">TETRIS</h1>
-
     <div id="dpad">
       <div class="drow">
-        <button class="ctrl-btn" id="btn-up" aria-label="Rotation">&#9650;</button>
+        <button class="ctrl-btn" id="btn-up"    aria-label="Rotation">&#9650;</button>
       </div>
       <div class="drow">
-        <button class="ctrl-btn" id="btn-left" aria-label="Gauche">&#9664;</button>
+        <button class="ctrl-btn" id="btn-left"  aria-label="Gauche">&#9664;</button>
         <div class="dpad-spacer"></div>
         <button class="ctrl-btn" id="btn-right" aria-label="Droite">&#9654;</button>
       </div>
       <div class="drow">
-        <button class="ctrl-btn" id="btn-down" aria-label="Chute rapide">&#9660;</button>
+        <button class="ctrl-btn" id="btn-down"  aria-label="Chute rapide">&#9660;</button>
       </div>
       <div id="chute-label">CHUTE RAPIDE</div>
     </div>
-
     <div id="speed-section">
       <div id="speed-label">VITESSE &bull;</div>
       <div id="speed-track"><div id="speed-fill"></div></div>
     </div>
   </div>
 
-  <!-- ─── CENTER PANEL ─── -->
   <div id="center-panel">
     <div id="board-wrap">
       <canvas id="board"></canvas>
     </div>
   </div>
 
-  <!-- ─── RIGHT PANEL ─── -->
   <div id="right-panel">
     <div class="info-box">
       <div class="box-label">SCORE</div>
       <div id="score-val">0</div>
-      <div id="lines-val">LIGNES: 0</div>
+      <div id="lines-val">LIGNES : 0</div>
     </div>
-
     <div class="info-box">
       <div class="box-label">NEXT</div>
       <canvas id="next-canvas"></canvas>
     </div>
-
     <button id="tour-btn" aria-label="Rotation">
       <span id="tour-icon">&#8635;</span>
       <span>TOUR</span>
     </button>
-
     <button id="pause-btn">PAUSE</button>
-
     <div class="info-box">
       <div class="box-label">NIVEAU</div>
       <div id="level-val">1</div>
     </div>
   </div>
+
 </div>
 
+<!-- signature (portrait = dans la grille CSS, paysage = fixed) -->
 <div id="signature">designed by Phil C.</div>
 
-<!-- ─── OVERLAY (game over / pause) ─── -->
+<!-- ══ OVERLAY pause / game over ══ -->
 <div id="overlay">
   <div id="ov-title">GAME OVER</div>
   <div id="ov-score">Score : 0</div>
@@ -471,7 +536,7 @@
 
 <script>
 // ══════════════════════════════════════════════
-//  TETRIS — Configuration
+//  Config
 // ══════════════════════════════════════════════
 const COLS = 10, ROWS = 20;
 
@@ -490,50 +555,48 @@ const SHAPES = {
   L: [[0,0,1],[1,1,1],[0,0,0]]
 };
 
-// Wall-kick offsets (SRS simplified)
 const KICKS = [0, -1, 1, -2, 2];
 
 // ══════════════════════════════════════════════
-//  Canvas setup
+//  Canvas
 // ══════════════════════════════════════════════
-const canvas    = document.getElementById('board');
-const ctx       = canvas.getContext('2d');
-const nextCv    = document.getElementById('next-canvas');
-const nextCtx   = nextCv.getContext('2d');
+const canvas  = document.getElementById('board');
+const ctx     = canvas.getContext('2d');
+const nextCv  = document.getElementById('next-canvas');
+const nextCtx = nextCv.getContext('2d');
 
-let BS = 18; // block size, recalculated on resize/init
+let BS = 18;
+
+function isPortrait() { return window.innerHeight > window.innerWidth; }
 
 function calcBS() {
-  const isPortrait = window.innerHeight > window.innerWidth;
-  if (isPortrait) {
-    // Zone canvas = 57vh, padding 12px → espace utile ~= 57vh - 12px
-    const maxH = window.innerHeight * 0.57 - 12;
-    // Largeur pleine écran avec petites marges
-    const maxW = window.innerWidth * 0.90;
+  if (isPortrait()) {
+    // Zone board = 57vh - 8px de padding
+    const maxH = window.innerHeight * 0.57 - 8;
+    // Largeur totale (le board span les 2 colonnes)
+    const maxW = window.innerWidth * 0.88;
     return Math.max(10, Math.min(30, Math.floor(maxH / ROWS), Math.floor(maxW / COLS)));
   }
-  // Paysage : 97% hauteur, 44% largeur (panneau central)
-  const maxH = window.innerHeight * 0.97;
-  const maxW  = window.innerWidth  * 0.44;
-  return Math.max(10, Math.min(30, Math.floor(maxH / ROWS), Math.floor(maxW / COLS)));
+  // Paysage : panneau central = ~46% de la largeur
+  const maxH = window.innerHeight * 0.96;
+  const maxW  = window.innerWidth  * 0.46;
+  return Math.max(10, Math.min(32, Math.floor(maxH / ROWS), Math.floor(maxW / COLS)));
 }
 
 function setupCanvas() {
   BS = calcBS();
   canvas.width  = COLS * BS;
   canvas.height = ROWS * BS;
-  const isPortrait = window.innerHeight > window.innerWidth;
-  // Aperçu "next" proportionnel au BS, plus petit en portrait pour tenir dans la case
-  const NB = isPortrait
-    ? Math.max(10, Math.floor(BS * 0.58))
-    : Math.max(14, Math.floor(BS * 0.85));
+  const NB = isPortrait()
+    ? Math.max(10, Math.floor(BS * 0.56))
+    : Math.max(14, Math.floor(BS * 0.84));
   nextCv.width  = 4 * NB;
   nextCv.height = 4 * NB;
-  nextCv._nb = NB;
+  nextCv._nb    = NB;
 }
 
 // ══════════════════════════════════════════════
-//  Game state
+//  État du jeu
 // ══════════════════════════════════════════════
 let board, current, nextPiece;
 let score, lines, level;
@@ -554,8 +617,7 @@ function drawFromBag() {
   if (!bag.length) fillBag();
   const type = bag.pop();
   return {
-    type,
-    color: COLORS[type],
+    type, color: COLORS[type],
     shape: SHAPES[type].map(r => [...r]),
     x: Math.floor(COLS / 2) - Math.floor(SHAPES[type][0].length / 2),
     y: 0
@@ -579,14 +641,11 @@ function initGame() {
 function spawn() {
   current = nextPiece;
   nextPiece = drawFromBag();
-  if (!valid(current, 0, 0)) {
-    over = true;
-    showOverlay(false);
-  }
+  if (!valid(current, 0, 0)) { over = true; showOverlay(false); }
 }
 
 // ══════════════════════════════════════════════
-//  Physics helpers
+//  Physique
 // ══════════════════════════════════════════════
 function valid(piece, dx, dy, shape) {
   const s = shape || piece.shape;
@@ -613,11 +672,7 @@ function rotate() {
   if (!current || paused || over) return;
   const s = rot90(current.shape);
   for (const k of KICKS) {
-    if (valid(current, k, 0, s)) {
-      current.shape = s;
-      current.x += k;
-      return;
-    }
+    if (valid(current, k, 0, s)) { current.shape = s; current.x += k; return; }
   }
 }
 
@@ -636,7 +691,6 @@ function lock() {
       }
     })
   );
-  // Clear complete lines
   let cleared = 0;
   for (let r = ROWS - 1; r >= 0; r--) {
     if (board[r].every(v => v !== null)) {
@@ -662,7 +716,7 @@ function hardDrop() {
 }
 
 // ══════════════════════════════════════════════
-//  UI updates
+//  UI
 // ══════════════════════════════════════════════
 function updateUI() {
   document.getElementById('score-val').textContent = score;
@@ -675,16 +729,13 @@ function showOverlay(isPause) {
   const ov = document.getElementById('overlay');
   const title = document.getElementById('ov-title');
   if (isPause) {
-    title.textContent = 'PAUSE';
-    title.className = 'pause-title';
-    document.getElementById('ov-score').textContent = `Score : ${score}`;
+    title.textContent = 'PAUSE'; title.className = 'pause-title';
     document.getElementById('ov-btn').textContent = 'REPRENDRE';
   } else {
-    title.textContent = 'GAME OVER';
-    title.className = '';
-    document.getElementById('ov-score').textContent = `Score : ${score}`;
+    title.textContent = 'GAME OVER'; title.className = '';
     document.getElementById('ov-btn').textContent = 'REJOUER';
   }
+  document.getElementById('ov-score').textContent = `Score : ${score}`;
   ov.classList.add('show');
 }
 
@@ -693,38 +744,33 @@ function hideOverlay() {
 }
 
 // ══════════════════════════════════════════════
-//  Drawing
+//  Dessin
 // ══════════════════════════════════════════════
 function drawBlock(c2d, x, y, color, bs) {
   c2d.fillStyle = color;
   c2d.fillRect(x * bs + 1, y * bs + 1, bs - 2, bs - 2);
-  // Top-left highlight
-  c2d.fillStyle = 'rgba(255,255,255,0.35)';
   const hl = Math.max(2, Math.floor(bs * 0.18));
+  c2d.fillStyle = 'rgba(255,255,255,0.35)';
   c2d.fillRect(x * bs + 1, y * bs + 1, bs - 2, hl);
   c2d.fillRect(x * bs + 1, y * bs + 1, hl, bs - 2);
-  // Bottom-right shadow
   c2d.fillStyle = 'rgba(0,0,0,0.4)';
   c2d.fillRect(x * bs + bs - hl - 1, y * bs + 1, hl, bs - 2);
   c2d.fillRect(x * bs + 1, y * bs + bs - hl - 1, bs - 2, hl);
 }
 
 function drawBoard() {
-  // Background
   ctx.fillStyle = '#000014';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  // Grid lines
-  ctx.strokeStyle = '#0d0d2e';
-  ctx.lineWidth = 0.5;
+  ctx.strokeStyle = '#0d0d2e'; ctx.lineWidth = 0.5;
   for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++)
       ctx.strokeRect(c * BS, r * BS, BS, BS);
-  // Board cells
+
   board.forEach((row, r) =>
     row.forEach((color, c) => { if (color) drawBlock(ctx, c, r, color, BS); })
   );
+
   if (current && !over) {
-    // Ghost
     const gd = ghostDY();
     if (gd > 0) {
       ctx.globalAlpha = 0.22;
@@ -735,33 +781,31 @@ function drawBoard() {
       );
       ctx.globalAlpha = 1;
     }
-    // Current piece
     current.shape.forEach((row, r) =>
       row.forEach((cell, c) => {
         if (cell) drawBlock(ctx, current.x + c, current.y + r, current.color, BS);
       })
     );
   }
-  // Pause overlay on board
+
   if (paused && !over) {
     ctx.fillStyle = 'rgba(0,0,15,0.65)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#00c8ff';
     ctx.font = `900 ${BS * 1.8}px Arial Black, Arial`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('PAUSE', canvas.width / 2, canvas.height / 2);
   }
 }
 
 function drawNext() {
-  const NB = nextCv._nb || 18;
+  const NB = nextCv._nb || 16;
   nextCtx.fillStyle = '#000014';
   nextCtx.fillRect(0, 0, nextCv.width, nextCv.height);
   if (!nextPiece) return;
   const s = nextPiece.shape;
   const ox = Math.floor((4 - s[0].length) / 2);
-  const oy = Math.floor((4 - s.length)    / 2);
+  const oy = Math.floor((4 - s.length) / 2);
   s.forEach((row, r) =>
     row.forEach((cell, c) => {
       if (cell) {
@@ -777,7 +821,7 @@ function drawNext() {
 }
 
 // ══════════════════════════════════════════════
-//  Game loop
+//  Boucle de jeu
 // ══════════════════════════════════════════════
 function loop(ts) {
   if (!over) {
@@ -799,7 +843,7 @@ function loop(ts) {
 }
 
 // ══════════════════════════════════════════════
-//  Controls — buttons
+//  Contrôles — boutons
 // ══════════════════════════════════════════════
 function btn(id, onPress, onRelease) {
   const el = document.getElementById(id);
@@ -809,17 +853,14 @@ function btn(id, onPress, onRelease) {
   if (onRelease) el.addEventListener('touchend', rel, { passive: false });
   el.addEventListener('mousedown', press);
   if (onRelease) el.addEventListener('mouseup', rel);
-  el.addEventListener('click', press); // fallback
+  el.addEventListener('click', press);
 }
 
 btn('btn-up',    () => rotate());
 btn('btn-left',  () => { if (!paused && !over && current && valid(current, -1, 0)) current.x--; });
 btn('btn-right', () => { if (!paused && !over && current && valid(current,  1, 0)) current.x++; });
-btn('btn-down',
-  () => { fastDrop = true; },
-  () => { fastDrop = false; }
-);
-btn('tour-btn', () => rotate());
+btn('btn-down',  () => { fastDrop = true; }, () => { fastDrop = false; });
+btn('tour-btn',  () => rotate());
 
 document.getElementById('pause-btn').addEventListener('click', togglePause);
 document.getElementById('pause-btn').addEventListener('touchstart', e => { e.preventDefault(); togglePause(); }, { passive: false });
@@ -838,7 +879,7 @@ document.getElementById('ov-btn').addEventListener('click', () => {
 });
 
 // ══════════════════════════════════════════════
-//  Keyboard
+//  Clavier
 // ══════════════════════════════════════════════
 const held = {};
 document.addEventListener('keydown', e => {
@@ -850,10 +891,7 @@ document.addEventListener('keydown', e => {
     case 'ArrowRight': if (!paused && current && valid(current,  1, 0)) current.x++; break;
     case 'ArrowDown':  fastDrop = true; break;
     case 'ArrowUp':    rotate(); break;
-    case ' ':
-      e.preventDefault();
-      if (!paused && current) hardDrop();
-      break;
+    case ' ':          e.preventDefault(); if (!paused && current) hardDrop(); break;
     case 'p': case 'P': case 'Escape': togglePause(); break;
   }
 });
@@ -863,12 +901,11 @@ document.addEventListener('keyup', e => {
 });
 
 // ══════════════════════════════════════════════
-//  Touch swipe on canvas
+//  Swipe sur le canvas
 // ══════════════════════════════════════════════
 let tx0, ty0, tTime0;
 canvas.addEventListener('touchstart', e => {
-  tx0 = e.touches[0].clientX;
-  ty0 = e.touches[0].clientY;
+  tx0 = e.touches[0].clientX; ty0 = e.touches[0].clientY;
   tTime0 = Date.now();
 }, { passive: true });
 
@@ -878,14 +915,11 @@ canvas.addEventListener('touchend', e => {
   const dy = e.changedTouches[0].clientY - ty0;
   const dt = Date.now() - tTime0;
   const adx = Math.abs(dx), ady = Math.abs(dy);
-  if (adx < 12 && ady < 12) { rotate(); return; }   // tap → rotate
+  if (adx < 12 && ady < 12) { rotate(); return; }
   if (dt < 300) {
     if (adx > ady) {
-      if (current && valid(current, dx > 0 ? 1 : -1, 0))
-        current.x += dx > 0 ? 1 : -1;
-    } else if (dy > 30) {
-      hardDrop();
-    }
+      if (current && valid(current, dx > 0 ? 1 : -1, 0)) current.x += dx > 0 ? 1 : -1;
+    } else if (dy > 30) { hardDrop(); }
   }
 }, { passive: true });
 
@@ -893,16 +927,24 @@ canvas.addEventListener('touchend', e => {
 //  Resize
 // ══════════════════════════════════════════════
 window.addEventListener('resize', () => {
-  setupCanvas();
-  drawBoard();
-  drawNext();
+  setupCanvas(); drawBoard(); drawNext();
 });
 
 // ══════════════════════════════════════════════
-//  Start
+//  Start screen
 // ══════════════════════════════════════════════
+function startGame() {
+  document.getElementById('start-screen').classList.add('hidden');
+  setupCanvas();
+  initGame();
+}
+
+const startBtn = document.getElementById('start-btn');
+startBtn.addEventListener('click', startGame);
+startBtn.addEventListener('touchstart', e => { e.preventDefault(); startGame(); }, { passive: false });
+
+// Init canvas pour le prérendu (pas de boucle de jeu)
 setupCanvas();
-initGame();
 </script>
 </body>
 </html>
