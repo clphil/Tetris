@@ -23,6 +23,10 @@
       font-family: 'Arial Black', Arial, sans-serif;
       color: #fff;
       touch-action: none;
+      overscroll-behavior: none;       /* bloque pull-to-refresh + overscroll */
+      -webkit-touch-callout: none;     /* bloque le menu long-press iOS */
+      user-select: none;               /* bloque la sélection de texte */
+      -webkit-user-select: none;
     }
 
     /* ══════════════════════════════════════
@@ -430,27 +434,34 @@
     #pause-btn:active { background: #003355; }
 
     /* ══════════════════════════════════════
-       BOUTON FLIP (power-up tous les 10 lignes)
+       JAUGE FLIP (circulaire, auto tous les 10 lignes)
     ══════════════════════════════════════ */
-    #flip-btn {
-      background: #1a0800;
-      border: 2px solid #ffcc00;
-      color: #ffcc00;
-      padding: clamp(4px, 1.2vw, 8px) clamp(8px, 2.5vw, 20px);
-      font-size: clamp(0.5rem, 1.6vw, 0.75rem);
-      letter-spacing: 3px;
-      font-weight: 900;
-      border-radius: 6px;
-      cursor: pointer;
-      width: 88%;
-      animation: flipPulse 0.85s ease-in-out infinite;
-      -webkit-tap-highlight-color: transparent;
+    #flip-gauge-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
     }
-    #flip-btn.hidden { display: none; }
-    #flip-btn:active { background: #4a2800; }
-    @keyframes flipPulse {
-      0%, 100% { box-shadow: 0 0 8px #ffcc0055; }
-      50%       { box-shadow: 0 0 22px #ffcc00cc, 0 0 44px #ffcc0044; }
+    #flip-gauge {
+      width: clamp(44px, 12vw, 62px);
+      height: clamp(44px, 12vw, 62px);
+      overflow: visible;
+      transition: filter 0.2s;
+    }
+    #flip-gauge-label {
+      font-size: clamp(0.38rem, 1.3vw, 0.56rem);
+      color: #00c8ff;
+      letter-spacing: 2px;
+      font-weight: 900;
+      font-family: 'Arial Black', Arial, sans-serif;
+    }
+    /* Avertissement : derniers 3 lignes */
+    @keyframes flipGaugePulse {
+      0%, 100% { filter: drop-shadow(0 0 4px #ffcc00aa); }
+      50%       { filter: drop-shadow(0 0 12px #ffcc00ff); }
+    }
+    #flip-gauge-wrap.flip-warn #flip-gauge {
+      animation: flipGaugePulse 0.55s ease-in-out infinite;
     }
 
     /* ══════════════════════════════════════
@@ -503,6 +514,242 @@
       z-index: 5;
       font-style: italic;
       font-family: Arial, sans-serif;
+    }
+
+    /* ══════════════════════════════════════
+       SAISIE D'INITIALES (fin de partie)
+    ══════════════════════════════════════ */
+    #initials-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,15,0.93);
+      display: none;
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 300;
+      gap: clamp(8px, 2vh, 18px);
+    }
+    #initials-overlay.show { display: flex; }
+    #init-game-over {
+      font-size: clamp(1.4rem, 5vw, 2.2rem);
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: #ff4444;
+      text-shadow: 0 0 20px #ff0000;
+    }
+    #init-final-score {
+      font-size: clamp(0.8rem, 2.5vw, 1.1rem);
+      color: #ccc;
+      letter-spacing: 2px;
+    }
+    #init-prompt {
+      font-size: clamp(0.62rem, 2vw, 0.88rem);
+      color: #00c8ff;
+      letter-spacing: 4px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+    #init-inputs {
+      display: flex;
+      gap: clamp(10px, 3.5vw, 18px);
+      margin: 2px 0;
+    }
+    .init-char {
+      width: clamp(52px, 15vw, 72px);
+      height: clamp(62px, 18vw, 84px);
+      background: #0a0a30;
+      border: 2px solid #00c8ff;
+      color: #fff;
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: clamp(2rem, 9vw, 3rem);
+      font-weight: 900;
+      text-align: center;
+      text-transform: uppercase;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #00c8ff33;
+      outline: none;
+      caret-color: transparent;
+      -webkit-appearance: none;
+    }
+    .init-char:focus {
+      border-color: #fff;
+      box-shadow: 0 0 22px #00c8ffaa;
+    }
+    #init-ok {
+      background: #0e0e38;
+      border: 2px solid #00c8ff;
+      color: #00c8ff;
+      padding: clamp(8px, 2vh, 14px) clamp(36px, 11vw, 60px);
+      font-size: clamp(0.78rem, 2.5vw, 1rem);
+      font-weight: 900;
+      letter-spacing: 4px;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 12px #00c8ff44;
+      margin-top: 2px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #init-ok:active { background: #003355; }
+    #init-ok:disabled { opacity: 0.28; cursor: default; box-shadow: none; }
+
+    /* ══════════════════════════════════════
+       TABLEAU DES SCORES
+    ══════════════════════════════════════ */
+    #scores-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,15,0.96);
+      display: none;
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 300;
+      gap: clamp(5px, 1.3vh, 11px);
+    }
+    #scores-overlay.show { display: flex; }
+    #sc-title {
+      font-size: clamp(1rem, 3.5vw, 1.6rem);
+      font-weight: 900;
+      letter-spacing: 5px;
+      color: #00c8ff;
+      text-shadow: 0 0 18px #00c8ff77;
+      margin-bottom: 4px;
+    }
+    #sc-list {
+      list-style: none;
+      padding: 0; margin: 0;
+      width: min(84vw, 310px);
+    }
+    #sc-list li {
+      display: flex;
+      align-items: center;
+      padding: clamp(4px, 1vh, 8px) 10px;
+      border-bottom: 1px solid rgba(0,200,255,0.07);
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: clamp(0.72rem, 2.6vw, 0.96rem);
+    }
+    #sc-list li.sc-new {
+      background: rgba(0,200,255,0.1);
+      border: 1px solid rgba(0,200,255,0.3);
+      border-radius: 6px;
+    }
+    .sc-rank  { color: #6666aa; width: 28px; text-align: right; flex-shrink: 0; }
+    .sc-init  { color: #00c8ff; letter-spacing: 4px; margin: 0 10px; flex: 1; }
+    .sc-score { color: #fff; text-align: right; flex-shrink: 0;
+                text-shadow: 0 0 6px #00c8ff33; }
+    #sc-replay {
+      background: #0e0e38;
+      border: 2px solid #00c8ff;
+      color: #00c8ff;
+      padding: clamp(8px, 2vh, 14px) clamp(32px, 10vw, 56px);
+      font-size: clamp(0.72rem, 2.2vw, 0.96rem);
+      font-weight: 900;
+      letter-spacing: 4px;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 14px #00c8ff55;
+      margin-top: clamp(6px, 1.5vh, 16px);
+      -webkit-tap-highlight-color: transparent;
+    }
+    #sc-replay:active { background: #003355; }
+
+    /* ══════════════════════════════════════
+       COMBO / ANNOUNCEMENTS / FLASH / SHAKE
+    ══════════════════════════════════════ */
+    #board-wrap { position: relative; }
+
+    #announce-wrap {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      pointer-events: none;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      opacity: 0;
+      width: 100%;
+    }
+    #announce-wrap.pop {
+      animation: announcePop 1.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+    }
+    @keyframes announcePop {
+      0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.3); }
+      12%  { opacity: 1; transform: translate(-50%,-50%) scale(1.25); }
+      22%  { transform: translate(-50%,-50%) scale(0.92); }
+      30%  { transform: translate(-50%,-50%) scale(1.08); }
+      40%  { transform: translate(-50%,-50%) scale(1); }
+      72%  { opacity: 1; }
+      100% { opacity: 0; transform: translate(-50%,-50%) scale(1.05); }
+    }
+    #announce-action {
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-weight: 900;
+      font-size: clamp(1.2rem, 4.5vw, 2.6rem);
+      letter-spacing: clamp(3px, 1vw, 6px);
+      text-align: center;
+      white-space: nowrap;
+      text-shadow: 0 0 18px currentColor, 0 0 36px currentColor, 0 0 60px currentColor;
+    }
+    #announce-combo {
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-weight: 900;
+      font-size: clamp(1.6rem, 7vw, 3.8rem);
+      text-align: center;
+      color: #fff;
+      text-shadow: 0 0 24px #fff, 0 0 50px rgba(255,210,0,0.9), 0 0 90px rgba(255,160,0,0.5);
+      line-height: 1;
+    }
+    #announce-points {
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-weight: 900;
+      font-size: clamp(0.7rem, 2.2vw, 1.2rem);
+      letter-spacing: 3px;
+      text-align: center;
+      color: #ffdd00;
+      text-shadow: 0 0 10px #ffdd00;
+    }
+
+    /* Flash plein écran */
+    #screen-flash {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 150;
+      opacity: 0;
+    }
+    #screen-flash.flash-white { animation: flashWhite 0.35s ease-out forwards; }
+    #screen-flash.flash-gold  { animation: flashGold  0.45s ease-out forwards; }
+    #screen-flash.flash-chaos { animation: flashChaos 0.55s ease-out forwards; }
+    #screen-flash.flash-flip  { animation: flashFlip  0.50s ease-out forwards; }
+    @keyframes flashWhite { 0%{opacity:.5;background:#fff}         100%{opacity:0;background:#fff} }
+    @keyframes flashGold  { 0%{opacity:.55;background:#ffcc00}     100%{opacity:0;background:#ffcc00} }
+    @keyframes flashChaos { 0%{opacity:.72;background:#ff3300} 45%{opacity:.38;background:#ff7700} 100%{opacity:0;background:#ff3300} }
+    @keyframes flashFlip  { 0%{opacity:.6;background:#9900ff}      100%{opacity:0;background:#5500cc} }
+
+    /* Shake du plateau */
+    @keyframes boardShake {
+      0%,100% { transform: translate(0,0) rotate(0deg); }
+      15% { transform: translate(-5px, 3px) rotate(-0.6deg); }
+      30% { transform: translate(5px, -3px) rotate(0.6deg); }
+      45% { transform: translate(-4px, 4px) rotate(-0.4deg); }
+      60% { transform: translate(4px, -2px) rotate(0.4deg); }
+      75% { transform: translate(-2px, 2px) rotate(-0.2deg); }
+      90% { transform: translate(2px, 0) rotate(0.1deg); }
+    }
+    #board-wrap.shaking { animation: boardShake 0.52s ease-out; }
+
+    /* Combo box */
+    #combo-box { display: none; }
+    #combo-box.show { display: flex; }
+    #combo-val {
+      font-size: clamp(1rem, 3.5vw, 1.8rem);
+      font-weight: 900;
+      color: #ffdd00;
+      text-shadow: 0 0 14px #ffdd00bb;
+      letter-spacing: 2px;
+      animation: comboPulse 0.6s ease-in-out infinite alternate;
+    }
+    @keyframes comboPulse {
+      from { filter: brightness(1); }
+      to   { filter: brightness(1.5) drop-shadow(0 0 8px #ffdd00); }
     }
 
     /* ══════════════════════════════════════
@@ -606,11 +853,7 @@
         padding: 4px 6px;
         font-size: clamp(0.48rem, 2.8vw, 0.72rem);
       }
-      #flip-btn {
-        width: 90%;
-        padding: 4px 6px;
-        font-size: clamp(0.48rem, 2.8vw, 0.72rem);
-      }
+      #flip-gauge { width: clamp(40px, 11vw, 54px); height: clamp(40px, 11vw, 54px); }
     }
   </style>
 </head>
@@ -653,8 +896,8 @@
         <span class="tbadge tbadge-o">GRENADE</span>
       </div>
       <p class="tuto-p">
-        1 par sac de 7. Elle clignote, elle s'&eacute;nerve&hellip;
-        et apr&egrave;s <strong style="color:#ff8833">5s&nbsp;&#128165;</strong> tout saute !
+        Apparition al&eacute;atoire. Elle clignote, elle s'&eacute;nerve&hellip;
+        et apr&egrave;s <strong style="color:#ff8833">5s&nbsp;&#128165;</strong> tout saute ! Si &ccedil;a d&eacute;clenche des lignes &rarr; <strong style="color:#ff6600">CHAOS CLEAR</strong>.
       </p>
     </div>
 
@@ -662,12 +905,31 @@
     <div class="tuto-section">
       <div class="tuto-h">
         &#8645; Flip
-        <span class="tbadge tbadge-p">TOUS LES 10 LIGNES</span>
+        <span class="tbadge tbadge-p">TOUTES LES MINUTES</span>
       </div>
       <p class="tuto-p">
         Le plateau se retourne, tout tombe, les lignes pleines disparaissent.
         Le chaos&nbsp;&#8212;&nbsp;mais le bon.
       </p>
+    </div>
+
+    <!-- COMBOS -->
+    <div class="tuto-section">
+      <div class="tuto-h">&#9889; Combos &amp; Scores</div>
+      <div class="tuto-grid">
+        <span class="tuto-k" style="color:#00ff88">DOUBLE</span>
+        <span class="tuto-v">2 lignes d'un coup</span>
+        <span class="tuto-k" style="color:#ffcc00">TRIPLE</span>
+        <span class="tuto-v">3 lignes — bonus + shake</span>
+        <span class="tuto-k" style="color:#ff4488">TETRIS</span>
+        <span class="tuto-v">4 lignes — gros bonus</span>
+        <span class="tuto-k" style="color:#ff6600">CHAOS</span>
+        <span class="tuto-v">Lignes via grenade</span>
+        <span class="tuto-k" style="color:#cc00ff">FLIP★</span>
+        <span class="tuto-v">Lignes apr&egrave;s un flip</span>
+        <span class="tuto-k" style="color:#fff">×2 ×3…</span>
+        <span class="tuto-v">Clears encha&icirc;n&eacute;s = combo</span>
+      </div>
     </div>
 
     <!-- AUTRES FEATURES -->
@@ -683,7 +945,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v22022026.1014</div>
+  <div id="version-label">v22022026.1025</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -713,6 +975,11 @@
   <div id="center-panel">
     <div id="board-wrap">
       <canvas id="board"></canvas>
+      <div id="announce-wrap">
+        <div id="announce-action"></div>
+        <div id="announce-combo"></div>
+        <div id="announce-points"></div>
+      </div>
     </div>
   </div>
 
@@ -731,7 +998,10 @@
       <span>TOUR</span>
     </button>
     <button id="pause-btn">PAUSE</button>
-    <button id="flip-btn" class="hidden">&#8645; FLIP</button>
+    <div id="combo-box" class="info-box">
+      <div class="box-label">COMBO</div>
+      <div id="combo-val">×2</div>
+    </div>
     <div class="info-box">
       <div class="box-label">NIVEAU</div>
       <div id="level-val">1</div>
@@ -740,14 +1010,40 @@
 
 </div>
 
+<!-- Flash plein écran -->
+<div id="screen-flash"></div>
+
 <!-- signature (portrait = dans la grille CSS, paysage = fixed) -->
 <div id="signature">designed by Phil C.</div>
 
-<!-- ══ OVERLAY pause / game over ══ -->
+<!-- ══ OVERLAY pause ══ -->
 <div id="overlay">
-  <div id="ov-title">GAME OVER</div>
-  <div id="ov-score">Score : 0</div>
-  <button id="ov-btn">REJOUER</button>
+  <div id="ov-title">PAUSE</div>
+  <div id="ov-score"></div>
+  <button id="ov-btn">REPRENDRE</button>
+</div>
+
+<!-- ══ SAISIE INITIALES ══ -->
+<div id="initials-overlay">
+  <div id="init-game-over">GAME OVER</div>
+  <div id="init-final-score">Score : 0</div>
+  <div id="init-prompt">TES INITIALES</div>
+  <div id="init-inputs">
+    <input class="init-char" id="ic0" maxlength="1" type="text"
+           autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+    <input class="init-char" id="ic1" maxlength="1" type="text"
+           autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+    <input class="init-char" id="ic2" maxlength="1" type="text"
+           autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+  </div>
+  <button id="init-ok" disabled>OK</button>
+</div>
+
+<!-- ══ TABLEAU DES SCORES ══ -->
+<div id="scores-overlay">
+  <div id="sc-title">MEILLEURS SCORES</div>
+  <ol id="sc-list"></ol>
+  <button id="sc-replay">REJOUER</button>
 </div>
 
 <script>
@@ -902,10 +1198,16 @@ let dropSpeed, dropAcc, lastTs, rafId;
 let fastDrop = false;
 let bag = [];
 let shinyCounter = 0; // ID unique par pièce grenade
-let flipAvailable    = false;
 let flipInProgress   = false;
-let lastFlipMilestone = 0;
+let flipTimer        = 0; // ms depuis le dernier flip
 let flipHighlightRows = []; // lignes à flasher pendant l'anim de suppression
+let comboCount = 0; // clears consécutifs sans pause
+
+// ── Pluie d'astéroïdes ──
+let asteroids            = [];   // { x, y (float), vy, destroyedCells, done }
+let asteroidRainTimer    = 0;
+let asteroidRainInterval = 25000 + Math.random() * 20000; // 25-45 s
+let rainAnnouncementTimer = 0;   // durée restante de l'annonce en ms
 
 // ══════════════════════════════════════════════
 //  Sac de pièces — exactement 1 shiny par sac
@@ -916,8 +1218,9 @@ function fillBag() {
     const j = Math.floor(Math.random() * (i + 1));
     [types[i], types[j]] = [types[j], types[i]];
   }
-  // Exactement 1 pièce grenade par sac de 7
-  const shinyPos = Math.floor(Math.random() * types.length);
+  // ~25 % de chance d'avoir 1 shiny par sac (aléatoire)
+  const hasShiny = Math.random() < 0.25;
+  const shinyPos = hasShiny ? Math.floor(Math.random() * types.length) : -1;
   bag = types.map((type, i) => ({ type, shiny: i === shinyPos }));
 }
 
@@ -943,6 +1246,10 @@ function initGame() {
   paused    = false; over = false; fastDrop = false;
   particles = [];
   flipAvailable = false; flipInProgress = false; lastFlipMilestone = 0;
+  flipTimer = 0; comboCount = 0;
+  asteroids = []; asteroidRainTimer = 0;
+  asteroidRainInterval = 25000 + Math.random() * 20000;
+  rainAnnouncementTimer = 0;
   document.getElementById('flip-btn').classList.add('hidden');
   bag = []; fillBag();
   nextPiece = drawFromBag();
@@ -956,7 +1263,7 @@ function initGame() {
 function spawn() {
   current = nextPiece;
   nextPiece = drawFromBag();
-  if (!valid(current, 0, 0)) { over = true; showOverlay(false); }
+  if (!valid(current, 0, 0)) { over = true; showInitialsScreen(); }
 }
 
 // ══════════════════════════════════════════════
@@ -1017,9 +1324,9 @@ function applyGravity() {
 
 // ══════════════════════════════════════════════
 //  Effacement de lignes complètes
+//  mode : 'normal' | 'shiny' | 'flip'
 // ══════════════════════════════════════════════
-function clearLines() {
-  // Repérer toutes les lignes complètes
+function clearLines(mode = 'normal') {
   const fullRows = [];
   for (let r = 0; r < ROWS; r++) {
     if (board[r].every(v => v !== null)) fullRows.push(r);
@@ -1027,7 +1334,7 @@ function clearLines() {
   const cleared = fullRows.length;
   if (!cleared) return 0;
 
-  // Spawn des pixels AVANT suppression (indices encore valides)
+  // Particules AVANT suppression
   for (const r of fullRows) {
     for (let c = 0; c < COLS; c++) {
       const cell = board[r][c];
@@ -1035,21 +1342,53 @@ function clearLines() {
     }
   }
 
-  // Supprimer les lignes complètes d'un coup
   board = board.filter((_, idx) => !fullRows.includes(idx));
   while (board.length < ROWS) board.unshift(Array(COLS).fill(null));
 
-  score += cleared * cleared * 100;
   lines += cleared;
   level = Math.floor(lines / 10) + 1;
-  dropSpeed = Math.max(120, 850 - (level - 1) * 50);
-  // Débloque le bouton FLIP à chaque nouveau palier de 10 lignes
-  const milestone = Math.floor(lines / 10) * 10;
-  if (milestone > 0 && milestone > lastFlipMilestone) {
-    lastFlipMilestone = milestone;
-    flipAvailable = true;
-    document.getElementById('flip-btn').classList.remove('hidden');
+  dropSpeed = Math.max(55, 850 - (level - 1) * 85 - Math.floor(score / 3000) * 5);
+
+  // ── Scoring spectaculaire ──
+  const BASE = [0, 100, 300, 600, 1000];
+  let pts = (BASE[Math.min(cleared, 4)]) * level;
+
+  comboCount++;
+  if (comboCount > 1) pts = Math.round(pts * (1 + (comboCount - 1) * 0.5));
+
+  let specialBonus = 0;
+  let actionName   = '';
+  let flashType    = 'white';
+  let color        = '#00c8ff';
+
+  if (mode === 'shiny') {
+    actionName   = 'CHAOS CLEAR';
+    specialBonus = 600 + cleared * 350;
+    flashType    = 'chaos';
+    color        = '#ff6600';
+    doShake();
+    doVibrate('chaos');
+  } else if (mode === 'flip') {
+    actionName   = 'FLIP MASTER';
+    specialBonus = 400 + cleared * 250;
+    flashType    = 'flip';
+    color        = '#cc00ff';
+    doShake();
+    doVibrate('flip');
+  } else {
+    if      (cleared === 1) { doVibrate('single'); }
+    else if (cleared === 2) { actionName = 'DOUBLE'; color = '#00ff88'; flashType = 'white'; doVibrate('double'); }
+    else if (cleared === 3) { actionName = 'TRIPLE'; color = '#ffcc00'; flashType = 'gold'; doShake(); doVibrate('triple'); }
+    else if (cleared === 4) { actionName = 'TETRIS'; color = '#ff4488'; flashType = 'gold'; specialBonus = 800 * level; doShake(); doVibrate('tetris'); }
   }
+
+  score += pts + specialBonus;
+
+  if (actionName || comboCount >= 2) {
+    doScreenFlash(flashType);
+    showAnnouncement(actionName, comboCount, pts + specialBonus, color);
+  }
+
   updateUI();
   return cleared;
 }
@@ -1075,7 +1414,8 @@ function lock() {
     })
   );
 
-  clearLines();
+  const cleared = clearLines('normal');
+  if (!cleared) { comboCount = 0; resetComboDisplay(); }
   spawn();
 }
 
@@ -1127,8 +1467,196 @@ function checkShinyExplosions() {
 
   if (anyExploded) {
     applyGravity();
-    clearLines(); // des lignes peuvent se former après la chute
+    clearLines('shiny'); // des lignes peuvent se former après la chute
     updateUI();
+  }
+}
+
+// ══════════════════════════════════════════════
+//  PLUIE D'ASTÉROÏDES
+// ══════════════════════════════════════════════
+function triggerAsteroidRain() {
+  const count = 1 + Math.floor(Math.random() * 3); // 1 à 3 astéroïdes
+  const cols  = [];
+  while (cols.length < count) {
+    const c = Math.floor(Math.random() * COLS);
+    if (!cols.includes(c)) cols.push(c);
+  }
+  for (const c of cols) {
+    asteroids.push({
+      x: c,
+      y: -2.0,
+      vy: 0.55 + Math.random() * 0.35, // cellules par frame (très rapide)
+      destroyedCells: 0,
+      done: false
+    });
+  }
+  rainAnnouncementTimer = 2400;
+  asteroidRainInterval  = 25000 + Math.random() * 20000;
+  asteroidRainTimer     = 0;
+  if (navigator.vibrate) navigator.vibrate([40, 30, 80, 30, 40]);
+}
+
+// Traînée de feu derrière l'astéroïde en chute
+function spawnAsteroidTrail(ax, ay) {
+  if (ay < 0) return;
+  const px = (ax + 0.5) * BS;
+  const py = ay * BS;
+  for (let i = 0; i < 3; i++) {
+    const speed = (0.4 + Math.random() * 1.2) * (BS / 20);
+    const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.8;
+    const rnd   = Math.random();
+    const col   = rnd < 0.5 ? '#ff6600' : rnd < 0.8 ? '#ffaa00' : '#fff5c0';
+    particles.push({
+      x: px + (Math.random() - 0.5) * BS * 0.5,
+      y: py,
+      vx: Math.cos(angle) * speed * 0.3,
+      vy: -speed * 0.7,
+      color: col,
+      size: Math.max(1.5, BS * (0.07 + Math.random() * 0.11)),
+      life: 1.0,
+      decay: 0.055 + Math.random() * 0.05
+    });
+  }
+}
+
+// Explosion à l'impact
+function spawnAsteroidImpact(ax, ay) {
+  const px = (ax + 0.5) * BS;
+  const py = (ay + 0.5) * BS;
+  for (let i = 0; i < 18; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (1.8 + Math.random() * 3.5) * (BS / 20);
+    const rnd   = Math.random();
+    const col   = rnd < 0.4 ? '#8B7355' : rnd < 0.7 ? '#ff6600' : '#ffcc00';
+    particles.push({
+      x: px, y: py,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1.5,
+      color: col,
+      size: Math.max(1.5, BS * (0.1 + Math.random() * 0.2)),
+      life: 1.0,
+      decay: 0.025 + Math.random() * 0.03
+    });
+  }
+  if (navigator.vibrate) navigator.vibrate([25]);
+}
+
+// Physique des astéroïdes : chute rapide, destruction de cellules, pose
+function updateAsteroids(dt) {
+  let anyLanded = false;
+
+  for (let i = asteroids.length - 1; i >= 0; i--) {
+    const ast = asteroids[i];
+    if (ast.done) { asteroids.splice(i, 1); continue; }
+
+    // Traînée de feu (3 particules par frame)
+    spawnAsteroidTrail(ast.x, ast.y);
+
+    const prevY = ast.y;
+    ast.y += ast.vy * dt / 16;
+
+    // Vérifie chaque rangée entière traversée cette frame
+    const startRow = Math.max(0, Math.floor(prevY) + 1);
+    const endRow   = Math.floor(ast.y);
+    let stopped    = false;
+
+    for (let iy = startRow; iy <= endRow && !stopped; iy++) {
+      if (iy >= ROWS) {
+        // Atteint le sol
+        const landY = ROWS - 1;
+        if (!board[landY][ast.x]) {
+          board[landY][ast.x] = { color: '#7a6545', asteroid: true, shiny: false, placedAt: null, sid: null };
+          spawnAsteroidImpact(ast.x, landY);
+          anyLanded = true;
+        }
+        ast.done = true; stopped = true;
+      } else if (board[iy][ast.x]) {
+        if (ast.destroyedCells < 3) {
+          // Détruit la cellule, l'astéroïde continue
+          spawnExplosion(ast.x, iy, board[iy][ast.x].color);
+          board[iy][ast.x] = null;
+          ast.destroyedCells++;
+        } else {
+          // Limite de 3 destructions atteinte : se pose juste au-dessus
+          const landY = iy - 1;
+          if (landY >= 0 && !board[landY][ast.x]) {
+            board[landY][ast.x] = { color: '#7a6545', asteroid: true, shiny: false, placedAt: null, sid: null };
+            spawnAsteroidImpact(ast.x, landY);
+            anyLanded = true;
+          }
+          ast.done = true; stopped = true;
+        }
+      }
+    }
+
+    // Sécurité : hors grille sans être stoppé
+    if (!stopped && ast.y >= ROWS) {
+      const landY = ROWS - 1;
+      if (!board[landY][ast.x]) {
+        board[landY][ast.x] = { color: '#7a6545', asteroid: true, shiny: false, placedAt: null, sid: null };
+        spawnAsteroidImpact(ast.x, landY);
+        anyLanded = true;
+      }
+      ast.done = true;
+    }
+    if (ast.done) asteroids.splice(i, 1);
+  }
+
+  if (anyLanded) {
+    applyGravity();
+    clearLines();
+    updateUI();
+  }
+}
+
+// Dessin d'une cellule astéroïde posée sur le plateau
+function drawAsteroidCell(c2d, x, y, bs) {
+  const px = x * bs + 1, py = y * bs + 1, sz = bs - 2;
+  // Corps rocheux brun
+  c2d.fillStyle = '#6b4f2a';
+  c2d.fillRect(px, py, sz, sz);
+  // Texture caillouteuse (deux taches sombres)
+  c2d.fillStyle = '#3e2e14';
+  c2d.fillRect(px + 1,                   py + 1,                   Math.ceil(sz * 0.35), Math.ceil(sz * 0.28));
+  c2d.fillRect(px + Math.ceil(sz * 0.55), py + Math.ceil(sz * 0.52), Math.ceil(sz * 0.32), Math.ceil(sz * 0.28));
+  // Reflet clair
+  c2d.fillStyle = 'rgba(255,200,120,0.18)';
+  c2d.fillRect(px + 1, py + 1, sz - 2, Math.ceil(sz * 0.2));
+  // Halo rougeoyant résiduel
+  c2d.save();
+  c2d.shadowColor = 'rgba(255, 110, 0, 0.45)';
+  c2d.shadowBlur  = bs * 0.7;
+  c2d.strokeStyle = 'rgba(255, 160, 60, 0.65)';
+  c2d.lineWidth   = Math.max(1, bs * 0.08);
+  c2d.strokeRect(px, py, sz, sz);
+  c2d.restore();
+}
+
+// Dessin des astéroïdes en vol (position flottante)
+function drawFallingAsteroids() {
+  for (const ast of asteroids) {
+    if (ast.y < 0) continue;
+    const px = ast.x * BS + 1;
+    const py = ast.y  * BS + 1;
+    const sz = BS - 2;
+    ctx.save();
+    // Halo de feu intense
+    ctx.shadowColor = 'rgba(255, 120, 0, 0.95)';
+    ctx.shadowBlur  = BS * 2.0;
+    // Corps
+    ctx.fillStyle = '#7a5c2e';
+    ctx.fillRect(px, py, sz, sz);
+    // Texture
+    ctx.fillStyle = '#4a3318';
+    ctx.fillRect(px + 1,                   py + 1,                   Math.ceil(sz * 0.35), Math.ceil(sz * 0.28));
+    ctx.fillRect(px + Math.ceil(sz * 0.55), py + Math.ceil(sz * 0.5),  Math.ceil(sz * 0.3),  Math.ceil(sz * 0.28));
+    // Contour incandescent
+    ctx.shadowBlur  = 0;
+    ctx.strokeStyle = 'rgba(255, 220, 80, 0.98)';
+    ctx.lineWidth   = Math.max(1.5, BS * 0.11);
+    ctx.strokeRect(px, py, sz, sz);
+    ctx.restore();
   }
 }
 
@@ -1158,11 +1686,9 @@ function gravityStepOnce() {
 }
 
 function startFlip() {
-  if (flipInProgress || !flipAvailable || over) return;
-  flipAvailable  = false;
+  if (flipInProgress || over) return;
   flipInProgress = true;
   current = null;
-  document.getElementById('flip-btn').classList.add('hidden');
   document.getElementById('ingame-gravity').classList.add('flipping');
 
   const wrap = document.getElementById('board-wrap');
@@ -1228,7 +1754,7 @@ function animateFlipLineClear(rows) {
       setTimeout(flash, FLASH_MS);
     } else {
       flipHighlightRows = [];
-      clearLines();
+      clearLines('flip');
       updateUI();
       drawBoard();
       finalizeFlip();
@@ -1241,12 +1767,192 @@ function finalizeFlip() {
   document.getElementById('ingame-gravity').classList.remove('flipping');
   flipInProgress = false;
   spawn();
-  if (over) showOverlay(false);
+  if (over) showInitialsScreen();
+}
+
+// ══════════════════════════════════════════════
+//  SCORES — localStorage
+// ══════════════════════════════════════════════
+const SCORES_KEY = 'tetris_gravity_scores';
+
+function loadScores() {
+  try { return JSON.parse(localStorage.getItem(SCORES_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveScore(initials, finalScore) {
+  const scores = loadScores();
+  const entry = { initials, score: finalScore };
+  scores.push(entry);
+  scores.sort((a, b) => b.score - a.score);
+  const top = scores.slice(0, 10);
+  localStorage.setItem(SCORES_KEY, JSON.stringify(top));
+  // Trouve le rang de la nouvelle entrée (première occurrence du même objet)
+  const idx = top.findIndex(e => e === entry);
+  return { scores: top, newIdx: idx };
+}
+
+// ── Écran saisie initiales ──
+function showInitialsScreen() {
+  document.getElementById('init-final-score').textContent = `Score : ${score}`;
+  const inputs = ['ic0','ic1','ic2'].map(id => document.getElementById(id));
+  inputs.forEach(inp => { inp.value = ''; });
+  document.getElementById('init-ok').disabled = true;
+  document.getElementById('initials-overlay').classList.add('show');
+  setTimeout(() => inputs[0].focus(), 80);
+}
+
+function hideInitialsScreen() {
+  document.getElementById('initials-overlay').classList.remove('show');
+}
+
+function getInitials() {
+  return ['ic0','ic1','ic2'].map(id => document.getElementById(id).value.toUpperCase()).join('');
+}
+
+function updateInitialsOkBtn() {
+  const filled = ['ic0','ic1','ic2'].every(id => document.getElementById(id).value.length === 1);
+  document.getElementById('init-ok').disabled = !filled;
+}
+
+function submitInitials() {
+  const initials = getInitials();
+  if (initials.length < 3) return;
+  const { scores, newIdx } = saveScore(initials, score);
+  hideInitialsScreen();
+  showScoresScreen(scores, newIdx);
+}
+
+// Navigation entre les 3 cases ──
+(function setupInitialsInput() {
+  const inputs = ['ic0','ic1','ic2'].map(id => document.getElementById(id));
+  inputs.forEach((inp, i) => {
+    inp.addEventListener('input', () => {
+      // Garde seulement le dernier caractère alphabétique
+      inp.value = inp.value.replace(/[^A-Za-z]/g, '').slice(-1).toUpperCase();
+      if (inp.value && i < 2) inputs[i + 1].focus();
+      updateInitialsOkBtn();
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !inp.value && i > 0) {
+        e.preventDefault();
+        inputs[i - 1].focus();
+        inputs[i - 1].value = '';
+        updateInitialsOkBtn();
+      }
+      if (e.key === 'Enter') submitInitials();
+    });
+  });
+  document.getElementById('init-ok').addEventListener('click', submitInitials);
+  document.getElementById('init-ok').addEventListener('touchstart', e => { e.preventDefault(); submitInitials(); }, { passive: false });
+})();
+
+// ── Écran tableau des scores ──
+function showScoresScreen(scores, newIdx) {
+  const list = document.getElementById('sc-list');
+  list.innerHTML = '';
+  if (scores.length === 0) {
+    list.innerHTML = '<li style="color:#6666aa;justify-content:center;padding:12px;">Aucun score encore</li>';
+  } else {
+    scores.forEach((entry, i) => {
+      const li = document.createElement('li');
+      if (i === newIdx) li.classList.add('sc-new');
+      li.innerHTML =
+        `<span class="sc-rank">#${i + 1}</span>` +
+        `<span class="sc-init">${entry.initials}</span>` +
+        `<span class="sc-score">${entry.score.toLocaleString('fr-FR')}</span>`;
+      list.appendChild(li);
+    });
+  }
+  document.getElementById('scores-overlay').classList.add('show');
+}
+
+function hideScoresScreen() {
+  document.getElementById('scores-overlay').classList.remove('show');
+}
+
+document.getElementById('sc-replay').addEventListener('click', () => { hideScoresScreen(); initGame(); });
+document.getElementById('sc-replay').addEventListener('touchstart', e => { e.preventDefault(); hideScoresScreen(); initGame(); }, { passive: false });
+
+// ══════════════════════════════════════════════
+//  Effets visuels spectaculaires
+// ══════════════════════════════════════════════
+function doScreenFlash(type) {
+  const el = document.getElementById('screen-flash');
+  el.className = '';
+  void el.offsetWidth; // reflow pour relancer l'animation
+  el.className = `flash-${type}`;
+}
+
+function doShake() {
+  const wrap = document.getElementById('board-wrap');
+  wrap.classList.remove('shaking');
+  void wrap.offsetWidth;
+  wrap.classList.add('shaking');
+  wrap.addEventListener('animationend', () => wrap.classList.remove('shaking'), { once: true });
+}
+
+function doVibrate(type) {
+  if (!navigator.vibrate) return;
+  const patterns = {
+    single: [30],
+    double: [35, 55, 35],
+    triple: [40, 50, 40, 50, 40],
+    tetris: [30, 40, 80, 40, 120],
+    chaos:  [20, 30, 60, 30, 100, 30, 60],
+    flip:   [50, 40, 50, 40, 80],
+  };
+  navigator.vibrate(patterns[type] || [30]);
+}
+
+function showAnnouncement(action, combo, points, color) {
+  const wrap    = document.getElementById('announce-wrap');
+  const actEl   = document.getElementById('announce-action');
+  const comboEl = document.getElementById('announce-combo');
+  const ptsEl   = document.getElementById('announce-points');
+
+  actEl.textContent  = action;
+  actEl.style.color  = color || '#00c8ff';
+  comboEl.textContent = combo > 1 ? `×${combo}` : '';
+  ptsEl.textContent  = points > 0 ? `+${points.toLocaleString('fr-FR')}` : '';
+
+  wrap.className = '';
+  void wrap.offsetWidth;
+  wrap.className = 'pop';
+
+  // Affiche le compteur combo dans le panneau latéral
+  const comboBox = document.getElementById('combo-box');
+  const comboVal = document.getElementById('combo-val');
+  if (combo > 1) {
+    comboBox.classList.add('show');
+    comboVal.textContent = `×${combo}`;
+  }
+}
+
+function resetComboDisplay() {
+  document.getElementById('combo-box').classList.remove('show');
 }
 
 // ══════════════════════════════════════════════
 //  UI
 // ══════════════════════════════════════════════
+function updateFlipGauge() {
+  const CIRC = 106.81; // 2π × 17
+  const linesInCycle = lines % 10;
+  const offset = CIRC * (1 - linesInCycle / 10);
+  const arc  = document.getElementById('flip-arc');
+  const icon = document.getElementById('flip-icon');
+  const wrap = document.getElementById('flip-gauge-wrap');
+  if (!arc) return;
+  arc.style.strokeDashoffset = offset;
+  const warn = linesInCycle >= 7;
+  const col  = warn ? '#ffcc00' : '#00c8ff';
+  arc.style.stroke  = col;
+  icon.style.fill   = col;
+  if (warn) wrap.classList.add('flip-warn');
+  else      wrap.classList.remove('flip-warn');
+}
+
 function updateUI() {
   document.getElementById('score-val').textContent = score;
   document.getElementById('lines-val').textContent = `LIGNES : ${lines}`;
@@ -1256,14 +1962,8 @@ function updateUI() {
 function showOverlay(isPause) {
   const ov = document.getElementById('overlay');
   const title = document.getElementById('ov-title');
-  if (isPause) {
-    title.textContent = 'PAUSE'; title.className = 'pause-title';
-    document.getElementById('ov-btn').textContent = 'REPRENDRE';
-  } else {
-    title.textContent = 'GAME OVER'; title.className = '';
-    document.getElementById('ov-btn').textContent = 'REJOUER';
-  }
-  document.getElementById('ov-score').textContent = `Score : ${score}`;
+  title.textContent = 'PAUSE'; title.className = 'pause-title';
+  document.getElementById('ov-btn').textContent = 'REPRENDRE';
   ov.classList.add('show');
 }
 
@@ -1332,7 +2032,10 @@ function drawBoard() {
 
   board.forEach((row, r) =>
     row.forEach((cell, c) => {
-      if (cell) drawBlock(ctx, c, r, cell.color, BS, cell.shiny, cell.placedAt);
+      if (cell) {
+        if (cell.asteroid) drawAsteroidCell(ctx, c, r, BS);
+        else drawBlock(ctx, c, r, cell.color, BS, cell.shiny, cell.placedAt);
+      }
     })
   );
 
@@ -1362,8 +2065,27 @@ function drawBoard() {
     );
   }
 
+  // Astéroïdes en vol (par-dessus le plateau, sous les particules)
+  drawFallingAsteroids();
+
   // Particules par-dessus tout
   drawParticles();
+
+  // Annonce pluie d'astéroïdes
+  if (rainAnnouncementTimer > 0) {
+    const alpha = Math.min(1, rainAnnouncementTimer < 400 ? rainAnnouncementTimer / 400 : 1);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    const fsize = Math.max(10, Math.floor(BS * 0.95));
+    ctx.font = `900 ${fsize}px Arial Black, Arial`;
+    ctx.textAlign     = 'center';
+    ctx.textBaseline  = 'middle';
+    ctx.shadowColor   = '#cc2200';
+    ctx.shadowBlur    = 10;
+    ctx.fillStyle     = '#ff8800';
+    ctx.fillText('\u2604 PLUIE D\'AST\u00c9RO\u00cfDES', canvas.width / 2, canvas.height * 0.28);
+    ctx.restore();
+  }
 
   if (paused && !over) {
     ctx.fillStyle = 'rgba(0,0,15,0.65)';
@@ -1399,17 +2121,35 @@ function loop(ts) {
 
   if (!over) {
     if (!paused && !flipInProgress && current) {
-      const spd = fastDrop ? Math.min(40, dropSpeed * 0.05) : dropSpeed;
-      dropAcc += dt;
-      if (dropAcc >= spd) {
-        dropAcc = 0;
-        if (valid(current, 0, 1)) current.y++;
-        else lock();
+      // Flip automatique toutes les 60 secondes
+      flipTimer += dt;
+      if (flipTimer >= 60000) {
+        flipTimer = 0;
+        startFlip();
+      } else {
+        const spd = fastDrop ? Math.min(40, dropSpeed * 0.05) : dropSpeed;
+        dropAcc += dt;
+        if (dropAcc >= spd) {
+          dropAcc = 0;
+          if (valid(current, 0, 1)) current.y++;
+          else lock();
+        }
       }
     }
 
     // Grenades — suspendues pendant le flip
     if (!paused && !flipInProgress) checkShinyExplosions();
+
+    // Pluie d'astéroïdes — suspendue pendant le flip
+    if (!paused && !flipInProgress) {
+      asteroidRainTimer += dt;
+      if (asteroidRainTimer >= asteroidRainInterval && asteroids.length === 0) {
+        triggerAsteroidRain();
+      }
+      updateAsteroids(dt);
+    }
+
+    if (rainAnnouncementTimer > 0) rainAnnouncementTimer = Math.max(0, rainAnnouncementTimer - dt);
 
     updateParticles(dt);
     drawBoard();
@@ -1440,7 +2180,7 @@ btn('btn-left',  () => { if (!paused && !over && current && valid(current, -1, 0
 btn('btn-right', () => { if (!paused && !over && current && valid(current,  1, 0)) current.x++; });
 btn('btn-down',  () => { fastDrop = true; }, () => { fastDrop = false; });
 btn('tour-btn',  () => rotate());
-btn('flip-btn',  () => startFlip());
+
 
 document.getElementById('pause-btn').addEventListener('click', togglePause);
 document.getElementById('pause-btn').addEventListener('touchstart', e => { e.preventDefault(); togglePause(); }, { passive: false });
@@ -1454,8 +2194,9 @@ function togglePause() {
 }
 
 document.getElementById('ov-btn').addEventListener('click', () => {
-  if (over) initGame();
-  else { paused = false; document.getElementById('pause-btn').textContent = 'PAUSE'; hideOverlay(); }
+  paused = false;
+  document.getElementById('pause-btn').textContent = 'PAUSE';
+  hideOverlay();
 });
 
 // ══════════════════════════════════════════════
@@ -1465,7 +2206,13 @@ const held = {};
 document.addEventListener('keydown', e => {
   if (held[e.code]) return;
   held[e.code] = true;
-  if (over) { if (e.key === 'Enter') initGame(); return; }
+  if (over) {
+    if (e.key === 'Enter') {
+      if (document.getElementById('initials-overlay').classList.contains('show')) submitInitials();
+      else if (document.getElementById('scores-overlay').classList.contains('show')) { hideScoresScreen(); initGame(); }
+    }
+    return;
+  }
   switch (e.key) {
     case 'ArrowLeft':  if (!paused && current && valid(current, -1, 0)) current.x--; break;
     case 'ArrowRight': if (!paused && current && valid(current,  1, 0)) current.x++; break;
@@ -1527,6 +2274,29 @@ startBtn.addEventListener('click', startGame);
 startBtn.addEventListener('touchstart', e => { e.preventDefault(); startGame(); }, { passive: false });
 
 setupCanvas();
+
+// ══════════════════════════════════════════════
+//  Blocage des gestes natifs du navigateur
+// ══════════════════════════════════════════════
+
+// Long-press → menu contextuel (Android & bureau)
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+// touchmove → swipe-back/forward + pull-to-refresh
+// Exception : le panneau tutoriel doit rester scrollable
+document.addEventListener('touchmove', e => {
+  if (!e.target.closest('#start-tuto')) e.preventDefault();
+}, { passive: false });
+
+// Gestes Safari (pinch, rotation à 2 doigts)
+document.addEventListener('gesturestart',  e => e.preventDefault());
+document.addEventListener('gesturechange', e => e.preventDefault());
+document.addEventListener('gestureend',    e => e.preventDefault());
+
+// Ctrl+scroll = zoom trackpad sur certains navigateurs desktop
+document.addEventListener('wheel', e => {
+  if (e.ctrlKey) e.preventDefault();
+}, { passive: false });
 
 // ── Service Worker (PWA installable) ──
 if ('serviceWorker' in navigator) {
