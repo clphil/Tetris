@@ -217,8 +217,9 @@
     ══════════════════════════════════════ */
     #app {
       display: flex;
-      position: fixed;
-      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
       overflow: hidden;
     }
 
@@ -387,6 +388,25 @@
       font-size: clamp(0.4rem, 1.3vw, 0.58rem);
       color: #8888cc;
       margin-top: 1px;
+    }
+    #best-label {
+      font-size: clamp(0.35rem, 1.1vw, 0.52rem);
+      color: #ffcc00;
+      letter-spacing: 3px;
+      margin-top: 4px;
+    }
+    #best-val {
+      font-size: clamp(0.7rem, 2.1vw, 1rem);
+      font-weight: 900;
+      color: #ffcc00;
+      text-shadow: 0 0 8px #ffcc0066;
+    }
+    #best-val.record-live {
+      animation: record-pulse 0.6s ease-out;
+    }
+    @keyframes record-pulse {
+      0%   { transform: scale(1.4); color: #fff; text-shadow: 0 0 20px #ffcc00; }
+      100% { transform: scale(1);   color: #ffcc00; }
     }
     #level-val {
       font-size: clamp(0.9rem, 2.6vw, 1.25rem);
@@ -708,6 +728,90 @@
     }
 
     /* Flash plein écran */
+    /* ══════════════════════════════════════
+       BANNIÈRE NOUVEAU RECORD
+    ══════════════════════════════════════ */
+    #record-banner {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      pointer-events: none;
+      z-index: 500;
+      opacity: 0;
+    }
+    #record-banner.record-show {
+      animation: recordAppear 2.8s cubic-bezier(.22,.68,0,1.2) forwards;
+    }
+    @keyframes recordAppear {
+      0%   { opacity: 0; }
+      8%   { opacity: 1; }
+      75%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    #record-inner {
+      display: flex; flex-direction: column;
+      align-items: center;
+      background: linear-gradient(145deg, #1a0a00cc, #3d2200cc);
+      border: 3px solid #ffcc00;
+      border-radius: 18px;
+      padding: clamp(14px,4vw,28px) clamp(22px,6vw,48px);
+      box-shadow: 0 0 60px #ffcc00aa, 0 0 120px #ff880066;
+      animation: recordBounce 2.8s cubic-bezier(.22,.68,0,1.2) forwards;
+    }
+    @keyframes recordBounce {
+      0%   { transform: scale(0.2) rotate(-8deg); }
+      12%  { transform: scale(1.15) rotate(2deg); }
+      20%  { transform: scale(0.92) rotate(-1deg); }
+      28%  { transform: scale(1.04) rotate(0.5deg); }
+      35%  { transform: scale(1) rotate(0deg); }
+      80%  { transform: scale(1) rotate(0deg); }
+      100% { transform: scale(1.3) rotate(0deg); }
+    }
+    #record-crown {
+      font-size: clamp(2.4rem, 8vw, 4rem);
+      color: #ffcc00;
+      text-shadow: 0 0 30px #ffcc00, 0 0 60px #ff8800;
+      animation: crownSpin 2.8s ease-in-out forwards;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    @keyframes crownSpin {
+      0%   { transform: rotate(-180deg) scale(0); }
+      18%  { transform: rotate(15deg) scale(1.2); }
+      28%  { transform: rotate(-5deg) scale(1); }
+      35%  { transform: rotate(0deg) scale(1); }
+      65%  { transform: rotate(0deg) scale(1); }
+      80%  { transform: rotate(360deg) scale(1.4); }
+      100% { transform: rotate(360deg) scale(1.4); }
+    }
+    #record-line1 {
+      font-size: clamp(1rem, 3.5vw, 1.8rem);
+      font-weight: 900;
+      letter-spacing: 8px;
+      color: #fff;
+      text-shadow: 0 0 20px #fff8;
+    }
+    #record-line2 {
+      font-size: clamp(1.6rem, 5.5vw, 3rem);
+      font-weight: 900;
+      letter-spacing: 6px;
+      color: #ffcc00;
+      text-shadow: 0 0 20px #ffcc00, 0 0 40px #ff8800;
+    }
+    #record-stars-top, #record-stars-bot {
+      font-size: clamp(1rem, 3vw, 1.6rem);
+      color: #ffcc00;
+      letter-spacing: 10px;
+      opacity: 0.7;
+      text-shadow: 0 0 10px #ffcc00;
+      animation: starsFlicker 0.4s ease-in-out infinite alternate;
+      margin: 4px 0;
+    }
+    @keyframes starsFlicker {
+      from { opacity: 0.4; letter-spacing: 8px; }
+      to   { opacity: 1;   letter-spacing: 14px; }
+    }
+
     #screen-flash {
       position: fixed; inset: 0;
       pointer-events: none;
@@ -840,9 +944,11 @@
       .info-box  { width: 90%; padding: 2px 5px; }
       .box-label { font-size: clamp(0.4rem, 2.2vw, 0.6rem); letter-spacing: 2px; margin-bottom: 1px; }
 
-      #score-val { font-size: clamp(1rem, 5.5vw, 1.6rem); }
-      #lines-val { font-size: clamp(0.38rem, 2vw, 0.54rem); margin-top: 1px; }
-      #level-val { font-size: clamp(0.9rem, 5vw, 1.4rem); }
+      #score-val  { font-size: clamp(1rem, 5.5vw, 1.6rem); }
+      #lines-val  { font-size: clamp(0.38rem, 2vw, 0.54rem); margin-top: 1px; }
+      #level-val  { font-size: clamp(0.9rem, 5vw, 1.4rem); }
+      #best-label { font-size: clamp(0.32rem, 1.8vw, 0.48rem); margin-top: 3px; }
+      #best-val   { font-size: clamp(0.62rem, 3.5vw, 0.9rem); }
 
       #tour-btn   { width: clamp(40px, 12vw, 56px); height: clamp(40px, 12vw, 56px); }
       #tour-icon  { font-size: clamp(0.9rem, 3.8vw, 1.2rem); }
@@ -870,6 +976,16 @@
 
   <!-- ═══ TUTORIEL ═══ -->
   <div id="start-tuto">
+
+    <!-- ASTUCE CONFORT -->
+    <div class="tuto-section">
+      <div class="tuto-h">&#9998; Astuce</div>
+      <p class="tuto-p">
+        Pour plus de confort, <strong style="color:#00e8ff">ajoute l'app sur ton &eacute;cran d'accueil</strong>&nbsp;!<br>
+        iOS&nbsp;: partage &#8594; &laquo;&nbsp;Sur l'&eacute;cran d'accueil&nbsp;&raquo;<br>
+        Android&nbsp;: menu &#8594; &laquo;&nbsp;Ajouter &agrave; l'&eacute;cran d'accueil&nbsp;&raquo;
+      </p>
+    </div>
 
     <!-- CONTRÔLES -->
     <div class="tuto-section">
@@ -912,6 +1028,16 @@
       </p>
     </div>
 
+    <!-- ASTÉROÏDES -->
+    <div class="tuto-section">
+      <div class="tuto-h">&#9732; Pluie d&apos;ast&eacute;ro&iuml;des</div>
+      <p class="tuto-p">
+        Toutes les 25&nbsp;&agrave;&nbsp;45&nbsp;s, des blocs de roche s&apos;&eacute;crasent sur la grille.
+        Chaque ast&eacute;ro&iuml;de d&eacute;truit jusqu&apos;&agrave; <strong style="color:#ff8833">2&nbsp;cellules</strong> avant de se poser.
+        D&eacute;truis-les en compl&eacute;tant les lignes&nbsp;!
+      </p>
+    </div>
+
     <!-- COMBOS -->
     <div class="tuto-section">
       <div class="tuto-h">&#9889; Combos &amp; Scores</div>
@@ -931,20 +1057,10 @@
       </div>
     </div>
 
-    <!-- AUTRES FEATURES -->
-    <div class="tuto-section">
-      <div class="tuto-h">&#9998; Astuce</div>
-      <p class="tuto-p">
-        Pour plus de confort, <strong style="color:#00e8ff">ajoute l'app sur ton &eacute;cran d'accueil</strong>&nbsp;!<br>
-        iOS&nbsp;: partage &#8594; &laquo;&nbsp;Sur l'&eacute;cran d'accueil&nbsp;&raquo;<br>
-        Android&nbsp;: menu &#8594; &laquo;&nbsp;Ajouter &agrave; l'&eacute;cran d'accueil&nbsp;&raquo;
-      </p>
-    </div>
-
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v22022026.1404</div>
+  <div id="version-label">v22022026.2122</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -987,6 +1103,8 @@
       <div class="box-label">SCORE</div>
       <div id="score-val">0</div>
       <div id="lines-val">LIGNES : 0</div>
+      <div id="best-label">RECORD</div>
+      <div id="best-val">—</div>
     </div>
     <div class="info-box">
       <div class="box-label">NEXT</div>
@@ -1011,6 +1129,17 @@
 
 <!-- Flash plein écran -->
 <div id="screen-flash"></div>
+
+<!-- ══ BANNIÈRE NOUVEAU RECORD ══ -->
+<div id="record-banner" aria-hidden="true">
+  <div id="record-stars-top"></div>
+  <div id="record-inner">
+    <div id="record-crown">&#9733;</div>
+    <div id="record-line1">NOUVEAU</div>
+    <div id="record-line2">RECORD&nbsp;!</div>
+  </div>
+  <div id="record-stars-bot"></div>
+</div>
 
 <!-- signature (portrait = dans la grille CSS, paysage = fixed) -->
 <div id="signature">designed by Phil C.</div>
@@ -1209,136 +1338,6 @@ let asteroidRainInterval = 25000 + Math.random() * 20000; // 25-45 s
 let rainAnnouncementTimer = 0;   // durée restante de l'annonce en ms
 
 // ══════════════════════════════════════════════
-//  Sons synthétiques — Web Audio API
-// ══════════════════════════════════════════════
-const sfx = (() => {
-  let ctx = null;
-  let unlocked = false;
-
-  function ac() {
-    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-    return ctx;
-  }
-
-  // Déverrouillage iOS/Android PWA : buffer silencieux + resume obligatoire
-  // dans un handler synchrone touchend/click
-  function unlock() {
-    if (unlocked) return;
-    try {
-      const c = ac();
-      const buf = c.createBuffer(1, 1, 22050);
-      const src = c.createBufferSource();
-      src.buffer = buf;
-      src.connect(c.destination);
-      src.start(0);
-      c.resume().then(() => { unlocked = true; });
-    } catch(e) {}
-  }
-  document.addEventListener('touchend', unlock, { passive: true });
-  document.addEventListener('click',    unlock, { passive: true });
-
-  function play(fn) {
-    try {
-      const c = ac();
-      if (c.state === 'suspended') c.resume().then(() => fn(c));
-      else fn(c);
-    } catch(e) {}
-  }
-
-  // Bruit blanc court
-  function noise(c, dur, vol = 0.3) {
-    const buf = c.createBuffer(1, c.sampleRate * dur, c.sampleRate);
-    const d   = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-    const src = c.createBufferSource();
-    src.buffer = buf;
-    const g = c.createGain();
-    g.gain.setValueAtTime(vol, c.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
-    src.connect(g); g.connect(c.destination);
-    src.start(); src.stop(c.currentTime + dur);
-  }
-
-  // Oscillateur simple
-  function osc(c, type, freq, dur, vol = 0.4, freqEnd = null) {
-    const o = c.createOscillator();
-    const g = c.createGain();
-    o.type = type;
-    o.frequency.setValueAtTime(freq, c.currentTime);
-    if (freqEnd) o.frequency.exponentialRampToValueAtTime(freqEnd, c.currentTime + dur);
-    g.gain.setValueAtTime(vol, c.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
-    o.connect(g); g.connect(c.destination);
-    o.start(); o.stop(c.currentTime + dur);
-  }
-
-  return {
-    // Brique posée : choc sourd
-    lock() {
-      play(c => {
-        osc(c, 'sawtooth', 140, 0.08, 0.25, 60);
-        noise(c, 0.06, 0.15);
-      });
-    },
-    // Hard drop : impact plus fort
-    hardDrop() {
-      play(c => {
-        osc(c, 'sawtooth', 200, 0.12, 0.4, 55);
-        noise(c, 0.10, 0.3);
-      });
-    },
-    // Rotation : tick léger
-    rotate() {
-      play(c => osc(c, 'square', 520, 0.04, 0.08));
-    },
-    // Effacement de ligne(s)
-    lineClear(n) {
-      play(c => {
-        const freqs = [0, 440, 550, 660, 880];
-        const vol   = [0, 0.25, 0.3, 0.35, 0.45][n] || 0.25;
-        osc(c, 'sine', freqs[n] || 440, 0.18, vol, (freqs[n] || 440) * 1.4);
-        if (n >= 2) noise(c, 0.12, 0.12);
-        if (n >= 4) {
-          // Tetris : accord spectaculaire
-          [660, 880, 1100].forEach((f, i) => {
-            setTimeout(() => play(cc => osc(cc, 'sine', f, 0.22, 0.2)), i * 55);
-          });
-        }
-      });
-    },
-    // Astéroïdes qui arrivent : grondement de warning
-    asteroidIncoming() {
-      play(c => {
-        osc(c, 'sawtooth', 80, 0.6, 0.35, 40);
-        noise(c, 0.5, 0.2);
-      });
-    },
-    // Astéroïde qui détruit une cellule en tombant
-    asteroidHit() {
-      play(c => {
-        osc(c, 'sawtooth', 180, 0.09, 0.3, 70);
-        noise(c, 0.07, 0.2);
-      });
-    },
-    // Astéroïde posé : bang d'impact
-    asteroidImpact() {
-      play(c => {
-        osc(c, 'sawtooth', 110, 0.18, 0.45, 35);
-        noise(c, 0.15, 0.35);
-      });
-    },
-    // Game over
-    gameOver() {
-      play(c => {
-        [220, 180, 140, 100].forEach((f, i) =>
-          setTimeout(() => play(cc => osc(cc, 'sawtooth', f, 0.35, 0.3)), i * 200)
-        );
-      });
-    },
-  };
-})();
-
-// ══════════════════════════════════════════════
 //  Sac de pièces — exactement 1 shiny par sac
 // ══════════════════════════════════════════════
 function fillBag() {
@@ -1383,6 +1382,7 @@ function initGame() {
   bag = []; fillBag();
   nextPiece = drawFromBag();
   spawn();
+  initBestDisplay();
   updateUI();
   hideOverlay();
   if (rafId) cancelAnimationFrame(rafId);
@@ -1392,7 +1392,7 @@ function initGame() {
 function spawn() {
   current = nextPiece;
   nextPiece = drawFromBag();
-  if (!valid(current, 0, 0)) { over = true; sfx.gameOver(); showInitialsScreen(); }
+  if (!valid(current, 0, 0)) { over = true; showInitialsScreen(); }
 }
 
 // ══════════════════════════════════════════════
@@ -1423,7 +1423,7 @@ function rotate() {
   if (!current || paused || over) return;
   const s = rot90(current.shape);
   for (const k of KICKS) {
-    if (valid(current, k, 0, s)) { current.shape = s; current.x += k; sfx.rotate(); return; }
+    if (valid(current, k, 0, s)) { current.shape = s; current.x += k; return; }
   }
 }
 
@@ -1486,10 +1486,10 @@ function clearLines(mode = 'normal') {
   board = board.filter((_, idx) => !fullRows.includes(idx));
   while (board.length < ROWS) board.unshift(Array(COLS).fill(null));
 
-  // Réinsérer les astéroïdes sauvegardés juste au-dessus du tas inférieur
-  // (cherche depuis le bas pour que applyGravity préserve l'ordre relatif)
+  // Réinsérer les astéroïdes sauvegardés au sommet de leur colonne
+  // (la gravité les fera retomber à leur position naturelle)
   for (const { c, cell } of savedAsteroids) {
-    for (let r = ROWS - 1; r >= 0; r--) {
+    for (let r = 0; r < ROWS; r++) {
       if (!board[r][c]) { board[r][c] = cell; break; }
     }
   }
@@ -1534,7 +1534,6 @@ function clearLines(mode = 'normal') {
     else if (cleared === 4) { actionName = 'TETRIS'; color = '#ff4488'; flashType = 'gold'; specialBonus = 800 * level; doShake(); doVibrate('tetris'); }
   }
 
-  sfx.lineClear(cleared);
   score += pts + specialBonus;
 
   if (actionName || comboCount >= 2) {
@@ -1567,7 +1566,6 @@ function lock() {
     })
   );
 
-  sfx.lock();
   const cleared = clearLines('normal');
   if (!cleared) { comboCount = 0; resetComboDisplay(); }
   spawn();
@@ -1575,7 +1573,6 @@ function lock() {
 
 function hardDrop() {
   if (!current || paused || over) return;
-  sfx.hardDrop();
   current.y += ghostDY();
   lock();
 }
@@ -1649,7 +1646,6 @@ function triggerAsteroidRain() {
   rainAnnouncementTimer = 2400;
   asteroidRainInterval  = 25000 + Math.random() * 20000;
   asteroidRainTimer     = 0;
-  sfx.asteroidIncoming();
   if (navigator.vibrate) navigator.vibrate([40, 30, 80, 30, 40]);
 }
 
@@ -1695,7 +1691,6 @@ function spawnAsteroidImpact(ax, ay) {
       decay: 0.025 + Math.random() * 0.03
     });
   }
-  sfx.asteroidImpact();
   if (navigator.vibrate) navigator.vibrate([25]);
 }
 
@@ -1731,7 +1726,6 @@ function updateAsteroids(dt) {
       } else if (board[iy][ast.x]) {
         if (ast.destroyedCells < 2) {
           // Détruit la cellule (normale ou astéroïde posé), l'astéroïde continue
-          sfx.asteroidHit();
           spawnExplosion(ast.x, iy, board[iy][ast.x].color);
           board[iy][ast.x] = null;
           ast.destroyedCells++;
@@ -1938,6 +1932,54 @@ function loadScores() {
   catch { return []; }
 }
 
+// ── Meilleur score en cours de partie ──
+let sessionBest    = 0;   // meilleur score chargé au démarrage
+let recordBeaten   = false; // déjà déclenché cette partie ?
+let recordBannerTO = null;
+
+function loadBestScore() {
+  const scores = loadScores();
+  return scores.length ? scores[0].score : 0;
+}
+
+function initBestDisplay() {
+  sessionBest  = loadBestScore();
+  recordBeaten = false;
+  const el = document.getElementById('best-val');
+  el.textContent = sessionBest > 0 ? sessionBest.toLocaleString('fr-FR') : '—';
+  el.classList.remove('record-live');
+}
+
+function checkNewRecord() {
+  if (recordBeaten || score <= sessionBest) return;
+  recordBeaten = true;
+  sessionBest  = score;
+
+  // Mise à jour affichage
+  const el = document.getElementById('best-val');
+  el.textContent = score.toLocaleString('fr-FR');
+  el.classList.remove('record-live');
+  void el.offsetWidth; // reflow pour relancer l'anim
+  el.classList.add('record-live');
+
+  // Étoiles dans la bannière
+  const stars = '&#9733;&#9733;&#9733;';
+  document.getElementById('record-stars-top').innerHTML = stars;
+  document.getElementById('record-stars-bot').innerHTML = stars;
+
+  // Lancer bannière
+  const banner = document.getElementById('record-banner');
+  banner.classList.remove('record-show');
+  void banner.offsetWidth;
+  banner.classList.add('record-show');
+  if (recordBannerTO) clearTimeout(recordBannerTO);
+  recordBannerTO = setTimeout(() => banner.classList.remove('record-show'), 2900);
+
+  // Flash doré + vibration
+  doScreenFlash('gold');
+  if (navigator.vibrate) navigator.vibrate([40, 30, 80, 30, 120]);
+}
+
 function saveScore(initials, finalScore) {
   const scores = loadScores();
   const entry = { initials, score: finalScore };
@@ -2115,6 +2157,13 @@ function updateUI() {
   document.getElementById('score-val').textContent = score;
   document.getElementById('lines-val').textContent = `LIGNES : ${lines}`;
   document.getElementById('level-val').textContent = level;
+  // Mise à jour affichage meilleur score + détection record
+  if (sessionBest > 0 || score > 0) {
+    const bestEl = document.getElementById('best-val');
+    const display = Math.max(sessionBest, score);
+    bestEl.textContent = display.toLocaleString('fr-FR');
+  }
+  checkNewRecord();
 }
 
 function showOverlay(isPause) {
