@@ -1073,7 +1073,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v22022026.2155</div>
+  <div id="version-label">v22022026.2206</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -1468,29 +1468,52 @@ function applyGravity() {
 //  mode : 'normal' | 'shiny' | 'flip'
 // ══════════════════════════════════════════════
 function clearLines(mode = 'normal') {
-  const fullRows = [];
+  // Lignes pleines sans astéroïde → retrait complet
+  // Lignes pleines avec astéroïde → briques normales détruites, astéroïde prend 1 dégât (2 = destruction)
+  const fullRowsNormal = [];
+  const fullRowsAst    = [];
   for (let r = 0; r < ROWS; r++) {
-    // Un astéroïde bloque le clear de sa ligne — il ne peut pas être détruit par un clear
-    if (board[r].every(v => v !== null) && !board[r].some(v => v?.asteroid)) {
-      fullRows.push(r);
+    if (board[r].every(v => v !== null)) {
+      if (board[r].some(v => v?.asteroid)) fullRowsAst.push(r);
+      else                                  fullRowsNormal.push(r);
     }
   }
-  const cleared = fullRows.length;
+  const cleared = fullRowsNormal.length + fullRowsAst.length;
   if (!cleared) return 0;
 
-  // Particules AVANT suppression
-  for (const r of fullRows) {
+  // ── Particules pour toutes les briques normales dans les lignes pleines ──
+  for (const r of [...fullRowsNormal, ...fullRowsAst]) {
     for (let c = 0; c < COLS; c++) {
       const cell = board[r][c];
-      if (cell) spawnLineExplosion(c, r, cell.color, cleared);
+      if (cell && !cell.asteroid) spawnLineExplosion(c, r, cell.color, cleared);
     }
   }
 
-  // Supprimer les lignes complètes (sans astéroïdes par définition)
-  board = board.filter((_, idx) => !fullRows.includes(idx));
+  // ── Lignes avec astéroïdes : dégâts + retrait briques normales ──
+  for (const r of fullRowsAst) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = board[r][c];
+      if (!cell) continue;
+      if (cell.asteroid) {
+        cell.hits = (cell.hits || 0) + 1;
+        if (cell.hits >= 2) {
+          // Astéroïde détruit au 2e dégât
+          spawnLineExplosion(c, r, '#ff6600', cleared);
+          spawnAsteroidImpact(c, r);
+          board[r][c] = null;
+        }
+        // Sinon : l'astéroïde reste en place avec hits=1 (fissures visibles)
+      } else {
+        board[r][c] = null; // brique normale retirée de la ligne
+      }
+    }
+  }
+
+  // ── Retirer les lignes normales complètes (sans astéroïdes) ──
+  board = board.filter((_, idx) => !fullRowsNormal.includes(idx));
   while (board.length < ROWS) board.unshift(Array(COLS).fill(null));
 
-  // Gravité : tout retombe
+  // ── Gravité : les lignes à astéroïdes endommagés se tassent ──
   applyGravity();
 
   lines += cleared;
@@ -1759,26 +1782,52 @@ function updateAsteroids(dt) {
 }
 
 // Dessin d'une cellule astéroïde posée sur le plateau
-function drawAsteroidCell(c2d, x, y, bs) {
+function drawAsteroidCell(c2d, x, y, bs, hits = 0) {
   const px = x * bs + 1, py = y * bs + 1, sz = bs - 2;
-  // Corps rocheux brun
-  c2d.fillStyle = '#6b4f2a';
+  // Corps rocheux (plus sombre si endommagé)
+  c2d.fillStyle = hits >= 1 ? '#3a2208' : '#6b4f2a';
   c2d.fillRect(px, py, sz, sz);
-  // Texture caillouteuse (deux taches sombres)
+  // Texture caillouteuse
   c2d.fillStyle = '#3e2e14';
-  c2d.fillRect(px + 1,                   py + 1,                   Math.ceil(sz * 0.35), Math.ceil(sz * 0.28));
+  c2d.fillRect(px + 1,                    py + 1,                    Math.ceil(sz * 0.35), Math.ceil(sz * 0.28));
   c2d.fillRect(px + Math.ceil(sz * 0.55), py + Math.ceil(sz * 0.52), Math.ceil(sz * 0.32), Math.ceil(sz * 0.28));
   // Reflet clair
-  c2d.fillStyle = 'rgba(255,200,120,0.18)';
+  c2d.fillStyle = hits >= 1 ? 'rgba(255,80,0,0.12)' : 'rgba(255,200,120,0.18)';
   c2d.fillRect(px + 1, py + 1, sz - 2, Math.ceil(sz * 0.2));
-  // Halo rougeoyant résiduel
-  c2d.save();
-  c2d.shadowColor = 'rgba(255, 110, 0, 0.45)';
-  c2d.shadowBlur  = bs * 0.7;
-  c2d.strokeStyle = 'rgba(255, 160, 60, 0.65)';
-  c2d.lineWidth   = Math.max(1, bs * 0.08);
-  c2d.strokeRect(px, py, sz, sz);
-  c2d.restore();
+
+  if (hits >= 1) {
+    // Fissures rouges visibles
+    c2d.save();
+    c2d.strokeStyle = 'rgba(255,50,0,0.95)';
+    c2d.lineWidth   = Math.max(1, bs * 0.07);
+    c2d.beginPath();
+    c2d.moveTo(px + sz * 0.18, py + sz * 0.08);
+    c2d.lineTo(px + sz * 0.48, py + sz * 0.44);
+    c2d.lineTo(px + sz * 0.28, py + sz * 0.72);
+    c2d.stroke();
+    c2d.beginPath();
+    c2d.moveTo(px + sz * 0.48, py + sz * 0.44);
+    c2d.lineTo(px + sz * 0.78, py + sz * 0.62);
+    c2d.stroke();
+    c2d.restore();
+    // Halo rouge intense (danger)
+    c2d.save();
+    c2d.shadowColor = 'rgba(255,40,0,0.9)';
+    c2d.shadowBlur  = bs * 1.1;
+    c2d.strokeStyle = 'rgba(255,60,0,0.95)';
+    c2d.lineWidth   = Math.max(1, bs * 0.1);
+    c2d.strokeRect(px, py, sz, sz);
+    c2d.restore();
+  } else {
+    // Halo rougeoyant normal
+    c2d.save();
+    c2d.shadowColor = 'rgba(255,110,0,0.45)';
+    c2d.shadowBlur  = bs * 0.7;
+    c2d.strokeStyle = 'rgba(255,160,60,0.65)';
+    c2d.lineWidth   = Math.max(1, bs * 0.08);
+    c2d.strokeRect(px, py, sz, sz);
+    c2d.restore();
+  }
 }
 
 // Dessin des astéroïdes en vol (position flottante)
@@ -2236,7 +2285,7 @@ function drawBoard() {
   board.forEach((row, r) =>
     row.forEach((cell, c) => {
       if (cell) {
-        if (cell.asteroid) drawAsteroidCell(ctx, c, r, BS);
+        if (cell.asteroid) drawAsteroidCell(ctx, c, r, BS, cell.hits || 0);
         else drawBlock(ctx, c, r, cell.color, BS, cell.shiny, cell.placedAt);
       }
     })
