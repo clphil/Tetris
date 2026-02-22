@@ -945,7 +945,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v22022026.1029</div>
+  <div id="version-label">v22022026.1034</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -1250,7 +1250,7 @@ function initGame() {
   asteroids = []; asteroidRainTimer = 0;
   asteroidRainInterval = 25000 + Math.random() * 20000;
   rainAnnouncementTimer = 0;
-  document.getElementById('flip-btn').classList.add('hidden');
+  document.getElementById('flip-btn')?.classList.add('hidden');
   bag = []; fillBag();
   nextPiece = drawFromBag();
   spawn();
