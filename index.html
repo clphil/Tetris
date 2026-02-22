@@ -945,7 +945,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v22022026.1159</div>
+  <div id="version-label">v22022026.1219</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -1487,10 +1487,10 @@ function clearLines(mode = 'normal') {
   board = board.filter((_, idx) => !fullRows.includes(idx));
   while (board.length < ROWS) board.unshift(Array(COLS).fill(null));
 
-  // Réinsérer les astéroïdes sauvegardés au sommet de leur colonne
-  // (la gravité les fera retomber à leur position naturelle)
+  // Réinsérer les astéroïdes sauvegardés juste au-dessus du tas inférieur
+  // (cherche depuis le bas pour que applyGravity préserve l'ordre relatif)
   for (const { c, cell } of savedAsteroids) {
-    for (let r = 0; r < ROWS; r++) {
+    for (let r = ROWS - 1; r >= 0; r--) {
       if (!board[r][c]) { board[r][c] = cell; break; }
     }
   }
