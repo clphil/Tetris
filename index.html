@@ -389,6 +389,25 @@
       color: #8888cc;
       margin-top: 1px;
     }
+    #best-label {
+      font-size: clamp(0.35rem, 1.1vw, 0.52rem);
+      color: #ffcc00;
+      letter-spacing: 3px;
+      margin-top: 4px;
+    }
+    #best-val {
+      font-size: clamp(0.7rem, 2.1vw, 1rem);
+      font-weight: 900;
+      color: #ffcc00;
+      text-shadow: 0 0 8px #ffcc0066;
+    }
+    #best-val.record-live {
+      animation: record-pulse 0.6s ease-out;
+    }
+    @keyframes record-pulse {
+      0%   { transform: scale(1.4); color: #fff; text-shadow: 0 0 20px #ffcc00; }
+      100% { transform: scale(1);   color: #ffcc00; }
+    }
     #level-val {
       font-size: clamp(0.9rem, 2.6vw, 1.25rem);
       font-weight: 900;
@@ -709,6 +728,90 @@
     }
 
     /* Flash plein écran */
+    /* ══════════════════════════════════════
+       BANNIÈRE NOUVEAU RECORD
+    ══════════════════════════════════════ */
+    #record-banner {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      pointer-events: none;
+      z-index: 500;
+      opacity: 0;
+    }
+    #record-banner.record-show {
+      animation: recordAppear 2.8s cubic-bezier(.22,.68,0,1.2) forwards;
+    }
+    @keyframes recordAppear {
+      0%   { opacity: 0; }
+      8%   { opacity: 1; }
+      75%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    #record-inner {
+      display: flex; flex-direction: column;
+      align-items: center;
+      background: linear-gradient(145deg, #1a0a00cc, #3d2200cc);
+      border: 3px solid #ffcc00;
+      border-radius: 18px;
+      padding: clamp(14px,4vw,28px) clamp(22px,6vw,48px);
+      box-shadow: 0 0 60px #ffcc00aa, 0 0 120px #ff880066;
+      animation: recordBounce 2.8s cubic-bezier(.22,.68,0,1.2) forwards;
+    }
+    @keyframes recordBounce {
+      0%   { transform: scale(0.2) rotate(-8deg); }
+      12%  { transform: scale(1.15) rotate(2deg); }
+      20%  { transform: scale(0.92) rotate(-1deg); }
+      28%  { transform: scale(1.04) rotate(0.5deg); }
+      35%  { transform: scale(1) rotate(0deg); }
+      80%  { transform: scale(1) rotate(0deg); }
+      100% { transform: scale(1.3) rotate(0deg); }
+    }
+    #record-crown {
+      font-size: clamp(2.4rem, 8vw, 4rem);
+      color: #ffcc00;
+      text-shadow: 0 0 30px #ffcc00, 0 0 60px #ff8800;
+      animation: crownSpin 2.8s ease-in-out forwards;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    @keyframes crownSpin {
+      0%   { transform: rotate(-180deg) scale(0); }
+      18%  { transform: rotate(15deg) scale(1.2); }
+      28%  { transform: rotate(-5deg) scale(1); }
+      35%  { transform: rotate(0deg) scale(1); }
+      65%  { transform: rotate(0deg) scale(1); }
+      80%  { transform: rotate(360deg) scale(1.4); }
+      100% { transform: rotate(360deg) scale(1.4); }
+    }
+    #record-line1 {
+      font-size: clamp(1rem, 3.5vw, 1.8rem);
+      font-weight: 900;
+      letter-spacing: 8px;
+      color: #fff;
+      text-shadow: 0 0 20px #fff8;
+    }
+    #record-line2 {
+      font-size: clamp(1.6rem, 5.5vw, 3rem);
+      font-weight: 900;
+      letter-spacing: 6px;
+      color: #ffcc00;
+      text-shadow: 0 0 20px #ffcc00, 0 0 40px #ff8800;
+    }
+    #record-stars-top, #record-stars-bot {
+      font-size: clamp(1rem, 3vw, 1.6rem);
+      color: #ffcc00;
+      letter-spacing: 10px;
+      opacity: 0.7;
+      text-shadow: 0 0 10px #ffcc00;
+      animation: starsFlicker 0.4s ease-in-out infinite alternate;
+      margin: 4px 0;
+    }
+    @keyframes starsFlicker {
+      from { opacity: 0.4; letter-spacing: 8px; }
+      to   { opacity: 1;   letter-spacing: 14px; }
+    }
+
     #screen-flash {
       position: fixed; inset: 0;
       pointer-events: none;
@@ -841,9 +944,11 @@
       .info-box  { width: 90%; padding: 2px 5px; }
       .box-label { font-size: clamp(0.4rem, 2.2vw, 0.6rem); letter-spacing: 2px; margin-bottom: 1px; }
 
-      #score-val { font-size: clamp(1rem, 5.5vw, 1.6rem); }
-      #lines-val { font-size: clamp(0.38rem, 2vw, 0.54rem); margin-top: 1px; }
-      #level-val { font-size: clamp(0.9rem, 5vw, 1.4rem); }
+      #score-val  { font-size: clamp(1rem, 5.5vw, 1.6rem); }
+      #lines-val  { font-size: clamp(0.38rem, 2vw, 0.54rem); margin-top: 1px; }
+      #level-val  { font-size: clamp(0.9rem, 5vw, 1.4rem); }
+      #best-label { font-size: clamp(0.32rem, 1.8vw, 0.48rem); margin-top: 3px; }
+      #best-val   { font-size: clamp(0.62rem, 3.5vw, 0.9rem); }
 
       #tour-btn   { width: clamp(40px, 12vw, 56px); height: clamp(40px, 12vw, 56px); }
       #tour-icon  { font-size: clamp(0.9rem, 3.8vw, 1.2rem); }
@@ -955,7 +1060,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v22022026.1927</div>
+  <div id="version-label">v22022026.2114</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -998,6 +1103,8 @@
       <div class="box-label">SCORE</div>
       <div id="score-val">0</div>
       <div id="lines-val">LIGNES : 0</div>
+      <div id="best-label">RECORD</div>
+      <div id="best-val">—</div>
     </div>
     <div class="info-box">
       <div class="box-label">NEXT</div>
@@ -1022,6 +1129,17 @@
 
 <!-- Flash plein écran -->
 <div id="screen-flash"></div>
+
+<!-- ══ BANNIÈRE NOUVEAU RECORD ══ -->
+<div id="record-banner" aria-hidden="true">
+  <div id="record-stars-top"></div>
+  <div id="record-inner">
+    <div id="record-crown">&#9733;</div>
+    <div id="record-line1">NOUVEAU</div>
+    <div id="record-line2">RECORD&nbsp;!</div>
+  </div>
+  <div id="record-stars-bot"></div>
+</div>
 
 <!-- signature (portrait = dans la grille CSS, paysage = fixed) -->
 <div id="signature">designed by Phil C.</div>
@@ -1264,6 +1382,7 @@ function initGame() {
   bag = []; fillBag();
   nextPiece = drawFromBag();
   spawn();
+  initBestDisplay();
   updateUI();
   hideOverlay();
   if (rafId) cancelAnimationFrame(rafId);
@@ -1813,6 +1932,54 @@ function loadScores() {
   catch { return []; }
 }
 
+// ── Meilleur score en cours de partie ──
+let sessionBest    = 0;   // meilleur score chargé au démarrage
+let recordBeaten   = false; // déjà déclenché cette partie ?
+let recordBannerTO = null;
+
+function loadBestScore() {
+  const scores = loadScores();
+  return scores.length ? scores[0].score : 0;
+}
+
+function initBestDisplay() {
+  sessionBest  = loadBestScore();
+  recordBeaten = false;
+  const el = document.getElementById('best-val');
+  el.textContent = sessionBest > 0 ? sessionBest.toLocaleString('fr-FR') : '—';
+  el.classList.remove('record-live');
+}
+
+function checkNewRecord() {
+  if (recordBeaten || score <= sessionBest) return;
+  recordBeaten = true;
+  sessionBest  = score;
+
+  // Mise à jour affichage
+  const el = document.getElementById('best-val');
+  el.textContent = score.toLocaleString('fr-FR');
+  el.classList.remove('record-live');
+  void el.offsetWidth; // reflow pour relancer l'anim
+  el.classList.add('record-live');
+
+  // Étoiles dans la bannière
+  const stars = '&#9733;&#9733;&#9733;';
+  document.getElementById('record-stars-top').innerHTML = stars;
+  document.getElementById('record-stars-bot').innerHTML = stars;
+
+  // Lancer bannière
+  const banner = document.getElementById('record-banner');
+  banner.classList.remove('record-show');
+  void banner.offsetWidth;
+  banner.classList.add('record-show');
+  if (recordBannerTO) clearTimeout(recordBannerTO);
+  recordBannerTO = setTimeout(() => banner.classList.remove('record-show'), 2900);
+
+  // Flash doré + vibration
+  doScreenFlash('gold');
+  if (navigator.vibrate) navigator.vibrate([40, 30, 80, 30, 120]);
+}
+
 function saveScore(initials, finalScore) {
   const scores = loadScores();
   const entry = { initials, score: finalScore };
@@ -1990,6 +2157,13 @@ function updateUI() {
   document.getElementById('score-val').textContent = score;
   document.getElementById('lines-val').textContent = `LIGNES : ${lines}`;
   document.getElementById('level-val').textContent = level;
+  // Mise à jour affichage meilleur score + détection record
+  if (sessionBest > 0 || score > 0) {
+    const bestEl = document.getElementById('best-val');
+    const display = Math.max(sessionBest, score);
+    bestEl.textContent = display.toLocaleString('fr-FR');
+  }
+  checkNewRecord();
 }
 
 function showOverlay(isPause) {
