@@ -137,8 +137,9 @@
       cursor: pointer;
       animation: btnPulse 1.8s ease-in-out infinite;
       -webkit-tap-highlight-color: transparent;
+      transition: background 0.08s, transform 0.08s;
     }
-    #start-btn:active { background: #003355; }
+    #start-btn:active, #start-btn.pressed { background: #003355; transform: scale(0.93); }
     @keyframes btnPulse {
       0%, 100% { box-shadow: 0 0 10px #00c8ff44; }
       50%       { box-shadow: 0 0 30px #00c8ffbb, 0 0 60px #00c8ff33; }
@@ -343,10 +344,10 @@
       display: flex; align-items: center; justify-content: center;
       user-select: none; -webkit-user-select: none;
       box-shadow: 0 0 6px #00c8ff55;
-      transition: background 0.08s;
+      transition: background 0.08s, transform 0.08s;
       -webkit-tap-highlight-color: transparent;
     }
-    .ctrl-btn:active { background: #00395a; box-shadow: 0 0 12px #00c8ffaa; }
+    .ctrl-btn:active, .ctrl-btn.pressed { background: #00395a; box-shadow: 0 0 12px #00c8ffaa; transform: scale(0.87); }
 
     #chute-label {
       font-size: clamp(0.4rem, 1.3vw, 0.58rem);
@@ -427,37 +428,22 @@
       background: #0e0e38;
       border: 3px solid #00c8ff;
       color: #00c8ff;
-      font-size: clamp(0.4rem, 1.3vw, 0.58rem);
-      font-weight: 900;
-      letter-spacing: 1px;
       cursor: pointer;
-      display: flex; flex-direction: column;
+      display: flex;
       align-items: center; justify-content: center;
-      gap: 2px;
       box-shadow: 0 0 12px #00c8ff55;
       -webkit-tap-highlight-color: transparent;
+      transition: background 0.08s, border-color 0.08s, transform 0.08s, box-shadow 0.08s;
     }
-    #tour-icon { font-size: clamp(1rem, 2.8vw, 1.35rem); line-height: 1; transition: transform 0.15s; }
-    .tour-label { transition: opacity 0.1s, font-size 0.1s; }
-    #tour-btn:active { background: #00395a; }
-
-    /* Effet pression : rouge, texte disparait, scale */
-    #tour-btn.tour-pressed {
+    #tour-icon { font-size: clamp(1.2rem, 3.2vw, 1.6rem); line-height: 1; transition: transform 0.12s; }
+    #tour-btn:active, #tour-btn.tour-pressed {
       background: #2a0000;
       border-color: #ff2200;
       color: #ff2200;
       transform: scale(0.84);
       box-shadow: 0 0 18px #ff220088;
-      transition: transform 0.08s, background 0.08s, border-color 0.08s, box-shadow 0.08s;
     }
-    #tour-btn.tour-pressed #tour-icon {
-      transform: rotate(-25deg) scale(1.15);
-      text-shadow: 0 0 14px #ff4444;
-    }
-    #tour-btn.tour-pressed .tour-label {
-      opacity: 0;
-      font-size: 0;
-    }
+    #tour-btn.tour-pressed #tour-icon { transform: rotate(-25deg) scale(1.15); }
 
     #pause-btn {
       background: #0e0e38;
@@ -471,8 +457,9 @@
       cursor: pointer;
       width: 88%;
       -webkit-tap-highlight-color: transparent;
+      transition: background 0.08s, transform 0.08s;
     }
-    #pause-btn:active { background: #003355; }
+    #pause-btn:active, #pause-btn.pressed { background: #003355; transform: scale(0.92); }
 
     /* ══════════════════════════════════════
        JAUGE FLIP (circulaire, auto tous les 10 lignes)
@@ -538,8 +525,9 @@
       border-radius: 8px;
       cursor: pointer;
       box-shadow: 0 0 12px #00c8ff55;
+      transition: background 0.08s, transform 0.08s;
     }
-    #ov-btn:active { background: #003355; }
+    #ov-btn:active, #ov-btn.pressed { background: #003355; transform: scale(0.93); }
 
     /* ══════════════════════════════════════
        SIGNATURE — paysage (fixed, discret)
@@ -628,8 +616,9 @@
       box-shadow: 0 0 12px #00c8ff44;
       margin-top: 2px;
       -webkit-tap-highlight-color: transparent;
+      transition: background 0.08s, transform 0.08s;
     }
-    #init-ok:active { background: #003355; }
+    #init-ok:active, #init-ok.pressed { background: #003355; transform: scale(0.92); }
     #init-ok:disabled { opacity: 0.28; cursor: default; box-shadow: none; }
 
     /* ══════════════════════════════════════
@@ -688,8 +677,9 @@
       box-shadow: 0 0 14px #00c8ff55;
       margin-top: clamp(6px, 1.5vh, 16px);
       -webkit-tap-highlight-color: transparent;
+      transition: background 0.08s, transform 0.08s;
     }
-    #sc-replay:active { background: #003355; }
+    #sc-replay:active, #sc-replay.pressed { background: #003355; transform: scale(0.92); }
 
     /* ══════════════════════════════════════
        COMBO / ANNOUNCEMENTS / FLASH / SHAKE
@@ -1083,7 +1073,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v22022026.2151</div>
+  <div id="version-label">v22022026.2155</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -1135,7 +1125,6 @@
     </div>
     <button id="tour-btn" aria-label="Rotation">
       <span id="tour-icon">&#8635;</span>
-      <span class="tour-label">TOUR</span>
     </button>
     <button id="pause-btn">PAUSE</button>
     <div id="combo-box" class="info-box">
@@ -2416,6 +2405,15 @@ document.getElementById('ov-btn').addEventListener('click', () => {
   paused = false;
   document.getElementById('pause-btn').textContent = 'PAUSE';
   hideOverlay();
+});
+
+// ══════════════════════════════════════════════
+//  Effet de pression tactile sur tous les boutons
+// ══════════════════════════════════════════════
+document.querySelectorAll('button').forEach(el => {
+  el.addEventListener('touchstart', () => el.classList.add('pressed'),    { passive: true });
+  el.addEventListener('touchend',   () => el.classList.remove('pressed'), { passive: true });
+  el.addEventListener('touchcancel',() => el.classList.remove('pressed'), { passive: true });
 });
 
 // ══════════════════════════════════════════════
