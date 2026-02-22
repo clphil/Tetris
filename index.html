@@ -945,7 +945,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v22022026.1034</div>
+  <div id="version-label">v22022026.1041</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -1334,15 +1334,27 @@ function clearLines(mode = 'normal') {
   const cleared = fullRows.length;
   if (!cleared) return 0;
 
-  // Particules AVANT suppression
+  // Séparer : lignes avec astéroïdes (on garde l'astéroïde) vs lignes pures
+  const asteroidRows = fullRows.filter(r => board[r].some(c => c && c.asteroid));
+  const pureRows     = fullRows.filter(r => !asteroidRows.includes(r));
+
+  // Particules AVANT suppression (non-astéroïdes uniquement)
   for (const r of fullRows) {
     for (let c = 0; c < COLS; c++) {
       const cell = board[r][c];
-      if (cell) spawnLineExplosion(c, r, cell.color, cleared);
+      if (cell && !cell.asteroid) spawnLineExplosion(c, r, cell.color, cleared);
     }
   }
 
-  board = board.filter((_, idx) => !fullRows.includes(idx));
+  // Lignes avec astéroïdes : effacer seulement les cellules normales
+  for (const r of asteroidRows) {
+    for (let c = 0; c < COLS; c++) {
+      if (board[r][c] && !board[r][c].asteroid) board[r][c] = null;
+    }
+  }
+
+  // Lignes sans astéroïdes : suppression + comblement en haut
+  board = board.filter((_, idx) => !pureRows.includes(idx));
   while (board.length < ROWS) board.unshift(Array(COLS).fill(null));
 
   lines += cleared;
