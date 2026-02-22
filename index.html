@@ -945,7 +945,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v22022026.1046</div>
+  <div id="version-label">v22022026.1136</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -1218,8 +1218,8 @@ function fillBag() {
     const j = Math.floor(Math.random() * (i + 1));
     [types[i], types[j]] = [types[j], types[i]];
   }
-  // ~25 % de chance d'avoir 1 shiny par sac (aléatoire)
-  const hasShiny = Math.random() < 0.25;
+  // ~15 % de chance d'avoir 1 shiny par sac — assez rare pour rester un challenge
+  const hasShiny = Math.random() < 0.15;
   const shinyPos = hasShiny ? Math.floor(Math.random() * types.length) : -1;
   bag = types.map((type, i) => ({ type, shiny: i === shinyPos }));
 }
@@ -1334,9 +1334,16 @@ function clearLines(mode = 'normal') {
   const cleared = fullRows.length;
   if (!cleared) return 0;
 
-  // Séparer : lignes avec astéroïdes (on garde l'astéroïde) vs lignes pures
-  const asteroidRows = fullRows.filter(r => board[r].some(c => c && c.asteroid));
-  const pureRows     = fullRows.filter(r => !asteroidRows.includes(r));
+  // Sauvegarder les astéroïdes présents dans les lignes complètes
+  // (ils ne disparaissent pas avec la ligne, ils retombent par gravité)
+  const savedAsteroids = []; // { c, cell }
+  for (const r of fullRows) {
+    for (let c = 0; c < COLS; c++) {
+      if (board[r][c] && board[r][c].asteroid) {
+        savedAsteroids.push({ c, cell: { ...board[r][c] } });
+      }
+    }
+  }
 
   // Particules AVANT suppression (non-astéroïdes uniquement)
   for (const r of fullRows) {
@@ -1346,19 +1353,20 @@ function clearLines(mode = 'normal') {
     }
   }
 
-  // Lignes avec astéroïdes : effacer seulement les cellules normales
-  for (const r of asteroidRows) {
-    for (let c = 0; c < COLS; c++) {
-      if (board[r][c] && !board[r][c].asteroid) board[r][c] = null;
+  // Supprimer TOUTES les lignes complètes (y compris celles avec astéroïdes)
+  board = board.filter((_, idx) => !fullRows.includes(idx));
+  while (board.length < ROWS) board.unshift(Array(COLS).fill(null));
+
+  // Réinsérer les astéroïdes sauvegardés au sommet de leur colonne
+  // (la gravité les fera retomber à leur position naturelle)
+  for (const { c, cell } of savedAsteroids) {
+    for (let r = 0; r < ROWS; r++) {
+      if (!board[r][c]) { board[r][c] = cell; break; }
     }
   }
 
-  // Lignes sans astéroïdes : suppression + comblement en haut
-  board = board.filter((_, idx) => !pureRows.includes(idx));
-  while (board.length < ROWS) board.unshift(Array(COLS).fill(null));
-
-  // Les trous créés dans les lignes avec astéroïdes → gravité immédiate
-  if (asteroidRows.length > 0) applyGravity();
+  // Gravité : tout retombe (pièces normales + astéroïdes du dessus)
+  applyGravity();
 
   lines += cleared;
   level = Math.floor(lines / 10) + 1;
@@ -1587,8 +1595,8 @@ function updateAsteroids(dt) {
         }
         ast.done = true; stopped = true;
       } else if (board[iy][ast.x]) {
-        if (ast.destroyedCells < 3) {
-          // Détruit la cellule, l'astéroïde continue
+        if (ast.destroyedCells < 2) {
+          // Détruit la cellule (normale ou astéroïde posé), l'astéroïde continue
           spawnExplosion(ast.x, iy, board[iy][ast.x].color);
           board[iy][ast.x] = null;
           ast.destroyedCells++;
