@@ -402,26 +402,21 @@
       width: clamp(44px, 11vw, 64px);
       height: clamp(44px, 11vw, 64px);
       border-radius: 50%;
-      background: #5a0000;
-      border: 3px solid #ff2222;
-      color: #ff2222;
+      background: #0e0e38;
+      border: 3px solid #00c8ff;
+      color: #00c8ff;
+      font-size: clamp(0.4rem, 1.3vw, 0.58rem);
+      font-weight: 900;
+      letter-spacing: 1px;
       cursor: pointer;
-      display: flex;
+      display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      box-shadow: 0 0 12px #ff222255;
+      gap: 2px;
+      box-shadow: 0 0 12px #00c8ff55;
       -webkit-tap-highlight-color: transparent;
     }
-    #tour-icon {
-      font-size: clamp(1.4rem, 4vw, 1.8rem);
-      line-height: 1;
-      display: inline-block;
-      animation: spin-icon 2s linear infinite;
-    }
-    @keyframes spin-icon {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
-    #tour-btn:active { background: #3a0000; }
+    #tour-icon { font-size: clamp(1rem, 2.8vw, 1.35rem); line-height: 1; }
+    #tour-btn:active { background: #00395a; }
 
     #pause-btn {
       background: #0e0e38;
@@ -851,7 +846,7 @@
       #level-val { font-size: clamp(0.9rem, 5vw, 1.4rem); }
 
       #tour-btn   { width: clamp(40px, 12vw, 56px); height: clamp(40px, 12vw, 56px); }
-      #tour-icon  { font-size: clamp(1.2rem, 5vw, 1.6rem); }
+      #tour-icon  { font-size: clamp(0.9rem, 3.8vw, 1.2rem); }
 
       #pause-btn {
         width: 90%;
@@ -950,7 +945,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v22022026.0946</div>
+  <div id="version-label">v22022026.1029</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -1000,6 +995,7 @@
     </div>
     <button id="tour-btn" aria-label="Rotation">
       <span id="tour-icon">&#8635;</span>
+      <span>TOUR</span>
     </button>
     <button id="pause-btn">PAUSE</button>
     <div id="combo-box" class="info-box">
