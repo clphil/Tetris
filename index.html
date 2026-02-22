@@ -945,7 +945,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v22022026.1156</div>
+  <div id="version-label">v22022026.1159</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -1214,12 +1214,37 @@ let rainAnnouncementTimer = 0;   // durée restante de l'annonce en ms
 // ══════════════════════════════════════════════
 const sfx = (() => {
   let ctx = null;
+  let unlocked = false;
+
   function ac() {
     if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-    if (ctx.state === 'suspended') ctx.resume();
     return ctx;
   }
-  function play(fn) { try { fn(ac()); } catch(e) {} }
+
+  // Déverrouillage iOS/Android PWA : buffer silencieux + resume obligatoire
+  // dans un handler synchrone touchend/click
+  function unlock() {
+    if (unlocked) return;
+    try {
+      const c = ac();
+      const buf = c.createBuffer(1, 1, 22050);
+      const src = c.createBufferSource();
+      src.buffer = buf;
+      src.connect(c.destination);
+      src.start(0);
+      c.resume().then(() => { unlocked = true; });
+    } catch(e) {}
+  }
+  document.addEventListener('touchend', unlock, { passive: true });
+  document.addEventListener('click',    unlock, { passive: true });
+
+  function play(fn) {
+    try {
+      const c = ac();
+      if (c.state === 'suspended') c.resume().then(() => fn(c));
+      else fn(c);
+    } catch(e) {}
+  }
 
   // Bruit blanc court
   function noise(c, dur, vol = 0.3) {
