@@ -254,6 +254,9 @@
     }
     #board { display: block; }
 
+    /* ── Boîte NEXT (dans le panneau gauche) ── */
+    #next-box { width: 88%; }
+
     /* ── Panneau droit ── */
     #right-panel {
       flex: 0 0 27%;
@@ -434,8 +437,27 @@
       box-shadow: 0 0 12px #00c8ff55;
       -webkit-tap-highlight-color: transparent;
     }
-    #tour-icon { font-size: clamp(1rem, 2.8vw, 1.35rem); line-height: 1; }
+    #tour-icon { font-size: clamp(1rem, 2.8vw, 1.35rem); line-height: 1; transition: transform 0.15s; }
+    .tour-label { transition: opacity 0.1s, font-size 0.1s; }
     #tour-btn:active { background: #00395a; }
+
+    /* Effet pression : rouge, texte disparait, scale */
+    #tour-btn.tour-pressed {
+      background: #2a0000;
+      border-color: #ff2200;
+      color: #ff2200;
+      transform: scale(0.84);
+      box-shadow: 0 0 18px #ff220088;
+      transition: transform 0.08s, background 0.08s, border-color 0.08s, box-shadow 0.08s;
+    }
+    #tour-btn.tour-pressed #tour-icon {
+      transform: rotate(-25deg) scale(1.15);
+      text-shadow: 0 0 14px #ff4444;
+    }
+    #tour-btn.tour-pressed .tour-label {
+      opacity: 0;
+      font-size: 0;
+    }
 
     #pause-btn {
       background: #0e0e38;
@@ -950,6 +972,7 @@
       #best-label { font-size: clamp(0.32rem, 1.8vw, 0.48rem); margin-top: 3px; }
       #best-val   { font-size: clamp(0.62rem, 3.5vw, 0.9rem); }
 
+      #next-box   { width: 80%; }
       #tour-btn   { width: clamp(40px, 12vw, 56px); height: clamp(40px, 12vw, 56px); }
       #tour-icon  { font-size: clamp(0.9rem, 3.8vw, 1.2rem); }
 
@@ -1060,7 +1083,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v22022026.2122</div>
+  <div id="version-label">v22022026.2151</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -1071,6 +1094,10 @@
       <span id="title-main">TETRIS</span>
       <span id="ingame-gravity"><span class="igrav-l" style="--i:0">G</span><span class="igrav-l" style="--i:1">R</span><span class="igrav-l" style="--i:2">A</span><span class="igrav-l" style="--i:3">V</span><span class="igrav-l" style="--i:4">I</span><span class="igrav-l" style="--i:5">T</span><span class="igrav-l" style="--i:6">Y</span></span>
     </h1>
+    <div class="info-box" id="next-box">
+      <div class="box-label">NEXT</div>
+      <canvas id="next-canvas"></canvas>
+    </div>
     <div id="dpad">
       <div class="drow">
         <button class="ctrl-btn" id="btn-up"    aria-label="Rotation">&#9650;</button>
@@ -1106,13 +1133,9 @@
       <div id="best-label">RECORD</div>
       <div id="best-val">—</div>
     </div>
-    <div class="info-box">
-      <div class="box-label">NEXT</div>
-      <canvas id="next-canvas"></canvas>
-    </div>
     <button id="tour-btn" aria-label="Rotation">
       <span id="tour-icon">&#8635;</span>
-      <span>TOUR</span>
+      <span class="tour-label">TOUR</span>
     </button>
     <button id="pause-btn">PAUSE</button>
     <div id="combo-box" class="info-box">
@@ -1458,48 +1481,32 @@ function applyGravity() {
 function clearLines(mode = 'normal') {
   const fullRows = [];
   for (let r = 0; r < ROWS; r++) {
-    if (board[r].every(v => v !== null)) fullRows.push(r);
+    // Un astéroïde bloque le clear de sa ligne — il ne peut pas être détruit par un clear
+    if (board[r].every(v => v !== null) && !board[r].some(v => v?.asteroid)) {
+      fullRows.push(r);
+    }
   }
   const cleared = fullRows.length;
   if (!cleared) return 0;
 
-  // Sauvegarder les astéroïdes présents dans les lignes complètes
-  // (ils ne disparaissent pas avec la ligne, ils retombent par gravité)
-  const savedAsteroids = []; // { c, cell }
-  for (const r of fullRows) {
-    for (let c = 0; c < COLS; c++) {
-      if (board[r][c] && board[r][c].asteroid) {
-        savedAsteroids.push({ c, cell: { ...board[r][c] } });
-      }
-    }
-  }
-
-  // Particules AVANT suppression (non-astéroïdes uniquement)
+  // Particules AVANT suppression
   for (const r of fullRows) {
     for (let c = 0; c < COLS; c++) {
       const cell = board[r][c];
-      if (cell && !cell.asteroid) spawnLineExplosion(c, r, cell.color, cleared);
+      if (cell) spawnLineExplosion(c, r, cell.color, cleared);
     }
   }
 
-  // Supprimer TOUTES les lignes complètes (y compris celles avec astéroïdes)
+  // Supprimer les lignes complètes (sans astéroïdes par définition)
   board = board.filter((_, idx) => !fullRows.includes(idx));
   while (board.length < ROWS) board.unshift(Array(COLS).fill(null));
 
-  // Réinsérer les astéroïdes sauvegardés au sommet de leur colonne
-  // (la gravité les fera retomber à leur position naturelle)
-  for (const { c, cell } of savedAsteroids) {
-    for (let r = 0; r < ROWS; r++) {
-      if (!board[r][c]) { board[r][c] = cell; break; }
-    }
-  }
-
-  // Gravité : tout retombe (pièces normales + astéroïdes du dessus)
+  // Gravité : tout retombe
   applyGravity();
 
   lines += cleared;
   level = Math.floor(lines / 10) + 1;
-  dropSpeed = Math.max(55, 850 - (level - 1) * 85 - Math.floor(score / 3000) * 5);
+  dropSpeed = Math.max(55, 850 - (level - 1) * 8); // vitesse max atteinte ~niveau 100
 
   // ── Scoring spectaculaire ──
   const BASE = [0, 100, 300, 600, 1000];
@@ -2386,7 +2393,12 @@ btn('btn-up',    () => rotate());
 btn('btn-left',  () => { if (!paused && !over && current && valid(current, -1, 0)) current.x--; });
 btn('btn-right', () => { if (!paused && !over && current && valid(current,  1, 0)) current.x++; });
 btn('btn-down',  () => { fastDrop = true; }, () => { fastDrop = false; });
-btn('tour-btn',  () => rotate());
+btn('tour-btn',  () => {
+  rotate();
+  const tb = document.getElementById('tour-btn');
+  tb.classList.add('tour-pressed');
+  setTimeout(() => tb.classList.remove('tour-pressed'), 280);
+});
 
 
 document.getElementById('pause-btn').addEventListener('click', togglePause);
