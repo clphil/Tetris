@@ -945,7 +945,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v22022026.1041</div>
+  <div id="version-label">v22022026.1046</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -1356,6 +1356,9 @@ function clearLines(mode = 'normal') {
   // Lignes sans astéroïdes : suppression + comblement en haut
   board = board.filter((_, idx) => !pureRows.includes(idx));
   while (board.length < ROWS) board.unshift(Array(COLS).fill(null));
+
+  // Les trous créés dans les lignes avec astéroïdes → gravité immédiate
+  if (asteroidRows.length > 0) applyGravity();
 
   lines += cleared;
   level = Math.floor(lines / 10) + 1;
