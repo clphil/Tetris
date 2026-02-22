@@ -945,7 +945,7 @@
   </div><!-- /start-tuto -->
 
   <button id="start-btn">START</button>
-  <div id="version-label">v22022026.1136</div>
+  <div id="version-label">v22022026.1156</div>
 </div>
 
 <!-- ══ JEU ══ -->
@@ -1210,6 +1210,111 @@ let asteroidRainInterval = 25000 + Math.random() * 20000; // 25-45 s
 let rainAnnouncementTimer = 0;   // durée restante de l'annonce en ms
 
 // ══════════════════════════════════════════════
+//  Sons synthétiques — Web Audio API
+// ══════════════════════════════════════════════
+const sfx = (() => {
+  let ctx = null;
+  function ac() {
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+  function play(fn) { try { fn(ac()); } catch(e) {} }
+
+  // Bruit blanc court
+  function noise(c, dur, vol = 0.3) {
+    const buf = c.createBuffer(1, c.sampleRate * dur, c.sampleRate);
+    const d   = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource();
+    src.buffer = buf;
+    const g = c.createGain();
+    g.gain.setValueAtTime(vol, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+    src.connect(g); g.connect(c.destination);
+    src.start(); src.stop(c.currentTime + dur);
+  }
+
+  // Oscillateur simple
+  function osc(c, type, freq, dur, vol = 0.4, freqEnd = null) {
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, c.currentTime);
+    if (freqEnd) o.frequency.exponentialRampToValueAtTime(freqEnd, c.currentTime + dur);
+    g.gain.setValueAtTime(vol, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(); o.stop(c.currentTime + dur);
+  }
+
+  return {
+    // Brique posée : choc sourd
+    lock() {
+      play(c => {
+        osc(c, 'sawtooth', 140, 0.08, 0.25, 60);
+        noise(c, 0.06, 0.15);
+      });
+    },
+    // Hard drop : impact plus fort
+    hardDrop() {
+      play(c => {
+        osc(c, 'sawtooth', 200, 0.12, 0.4, 55);
+        noise(c, 0.10, 0.3);
+      });
+    },
+    // Rotation : tick léger
+    rotate() {
+      play(c => osc(c, 'square', 520, 0.04, 0.08));
+    },
+    // Effacement de ligne(s)
+    lineClear(n) {
+      play(c => {
+        const freqs = [0, 440, 550, 660, 880];
+        const vol   = [0, 0.25, 0.3, 0.35, 0.45][n] || 0.25;
+        osc(c, 'sine', freqs[n] || 440, 0.18, vol, (freqs[n] || 440) * 1.4);
+        if (n >= 2) noise(c, 0.12, 0.12);
+        if (n >= 4) {
+          // Tetris : accord spectaculaire
+          [660, 880, 1100].forEach((f, i) => {
+            setTimeout(() => play(cc => osc(cc, 'sine', f, 0.22, 0.2)), i * 55);
+          });
+        }
+      });
+    },
+    // Astéroïdes qui arrivent : grondement de warning
+    asteroidIncoming() {
+      play(c => {
+        osc(c, 'sawtooth', 80, 0.6, 0.35, 40);
+        noise(c, 0.5, 0.2);
+      });
+    },
+    // Astéroïde qui détruit une cellule en tombant
+    asteroidHit() {
+      play(c => {
+        osc(c, 'sawtooth', 180, 0.09, 0.3, 70);
+        noise(c, 0.07, 0.2);
+      });
+    },
+    // Astéroïde posé : bang d'impact
+    asteroidImpact() {
+      play(c => {
+        osc(c, 'sawtooth', 110, 0.18, 0.45, 35);
+        noise(c, 0.15, 0.35);
+      });
+    },
+    // Game over
+    gameOver() {
+      play(c => {
+        [220, 180, 140, 100].forEach((f, i) =>
+          setTimeout(() => play(cc => osc(cc, 'sawtooth', f, 0.35, 0.3)), i * 200)
+        );
+      });
+    },
+  };
+})();
+
+// ══════════════════════════════════════════════
 //  Sac de pièces — exactement 1 shiny par sac
 // ══════════════════════════════════════════════
 function fillBag() {
@@ -1263,7 +1368,7 @@ function initGame() {
 function spawn() {
   current = nextPiece;
   nextPiece = drawFromBag();
-  if (!valid(current, 0, 0)) { over = true; showInitialsScreen(); }
+  if (!valid(current, 0, 0)) { over = true; sfx.gameOver(); showInitialsScreen(); }
 }
 
 // ══════════════════════════════════════════════
@@ -1294,7 +1399,7 @@ function rotate() {
   if (!current || paused || over) return;
   const s = rot90(current.shape);
   for (const k of KICKS) {
-    if (valid(current, k, 0, s)) { current.shape = s; current.x += k; return; }
+    if (valid(current, k, 0, s)) { current.shape = s; current.x += k; sfx.rotate(); return; }
   }
 }
 
@@ -1405,6 +1510,7 @@ function clearLines(mode = 'normal') {
     else if (cleared === 4) { actionName = 'TETRIS'; color = '#ff4488'; flashType = 'gold'; specialBonus = 800 * level; doShake(); doVibrate('tetris'); }
   }
 
+  sfx.lineClear(cleared);
   score += pts + specialBonus;
 
   if (actionName || comboCount >= 2) {
@@ -1437,6 +1543,7 @@ function lock() {
     })
   );
 
+  sfx.lock();
   const cleared = clearLines('normal');
   if (!cleared) { comboCount = 0; resetComboDisplay(); }
   spawn();
@@ -1444,6 +1551,7 @@ function lock() {
 
 function hardDrop() {
   if (!current || paused || over) return;
+  sfx.hardDrop();
   current.y += ghostDY();
   lock();
 }
@@ -1517,6 +1625,7 @@ function triggerAsteroidRain() {
   rainAnnouncementTimer = 2400;
   asteroidRainInterval  = 25000 + Math.random() * 20000;
   asteroidRainTimer     = 0;
+  sfx.asteroidIncoming();
   if (navigator.vibrate) navigator.vibrate([40, 30, 80, 30, 40]);
 }
 
@@ -1562,6 +1671,7 @@ function spawnAsteroidImpact(ax, ay) {
       decay: 0.025 + Math.random() * 0.03
     });
   }
+  sfx.asteroidImpact();
   if (navigator.vibrate) navigator.vibrate([25]);
 }
 
@@ -1597,6 +1707,7 @@ function updateAsteroids(dt) {
       } else if (board[iy][ast.x]) {
         if (ast.destroyedCells < 2) {
           // Détruit la cellule (normale ou astéroïde posé), l'astéroïde continue
+          sfx.asteroidHit();
           spawnExplosion(ast.x, iy, board[iy][ast.x].color);
           board[iy][ast.x] = null;
           ast.destroyedCells++;
