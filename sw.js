@@ -1,4 +1,4 @@
-const CACHE = 'tetris-v22022026.1132';
+const CACHE = 'tetris-v22022026.1927';
 const ASSETS = ['./index.html', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
