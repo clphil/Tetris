@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="rainbow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#ff0000"/>
+      <stop offset="16%"  stop-color="#ff6600"/>
+      <stop offset="32%"  stop-color="#ffee00"/>
+      <stop offset="48%"  stop-color="#00ee44"/>
+      <stop offset="64%"  stop-color="#00aaff"/>
+      <stop offset="80%"  stop-color="#aa00ff"/>
+      <stop offset="100%" stop-color="#ff00aa"/>
+    </linearGradient>
+  </defs>
+  <!-- Barre du haut (pièce en T - partie horizontale) -->
+  <rect x="80"  y="140" width="352" height="88" fill="url(#rainbow)" rx="14"/>
+  <!-- Colonne centrale (pièce en T - partie verticale) -->
+  <rect x="212" y="228" width="88"  height="148" fill="url(#rainbow)" rx="14"/>
+  <!-- Reflets 3D -->
+  <rect x="80"  y="140" width="352" height="20" fill="rgba(255,255,255,0.25)" rx="14"/>
+  <rect x="212" y="228" width="88"  height="20" fill="rgba(255,255,255,0.25)" rx="14"/>
+</svg>
